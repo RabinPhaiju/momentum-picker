@@ -1,6 +1,6 @@
 {
-  "name": "@rabinphaiju/momentum-picker",
-  "version": "0.1.0",
+  "name": "momentum-picker",
+  "version": "0.2.0",
   "description": "A production-ready iOS-style wheel DateTime picker for the web. Zero dependencies, Vanilla TypeScript.",
   "keywords": [
     "ios",

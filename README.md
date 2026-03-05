@@ -62,30 +62,6 @@ const calendar = new DatePicker({
 });
 ```
 
-### Vue 3
-
-```vue
-<template>
-  <button @click="open = true">Open Picker</button>
-  <MomentumPickerVue
-    :is-open="open"
-    mode="datetime"
-    :value="date"
-    @confirm="onConfirm"
-    @cancel="open = false"
-  />
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue';
-import MomentumPickerVue from 'momentum-picker/vue';
-
-const open = ref(false);
-const date = ref(new Date());
-const onConfirm = (d: Date) => { date.value = d; open.value = false; };
-</script>
-```
-
 ---
 
 ## API Reference
@@ -195,8 +171,7 @@ momentum-picker/
 │   ├── styles.css        # iOS-style CSS with CSS variables
 │   └── index.ts          # Public entry point
 ├── example/
-│   ├── index.html        # Plain HTML demo (all modes + theme toggle)
-│   └── vue-wrapper.vue   # Vue 3 wrapper component
+│   └── index.html        # Plain HTML demo (all modes + theme toggle)
 ├── dist/                 # Built output (generated)
 ├── README.md
 ├── package.json

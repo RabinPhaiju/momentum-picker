@@ -1,0 +1,20 @@
+{
+  "name": "momentum-picker-demo",
+  "version": "1.0.0",
+  "description": "Demo application for momentum-picker",
+  "main": "app.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["momentum-picker", "datetime", "picker"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "momentum-picker": "latest"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Momentum Picker Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button.tab-btn {
+            padding: 10px 20px;
+            font-size: 0.95em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        button.tab-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        button.tab-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .demo-section {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .demo-section.active {
+            display: block;
+        }
+
+        .demo-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .picker-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 300px;
+        }
+
+        .picker-container.inline {
+            min-height: 500px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button.action-btn {
+            padding: 10px 20px;
+            font-size: 0.95em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            background: #667eea;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        button.action-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button.action-btn.secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        button.action-btn.secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .output {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            color: #333;
+            font-size: 0.95em;
+            border-left: 4px solid #667eea;
+        }
+
+        .description {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .picker-wrapper {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎡 Momentum Picker</h1>
+            <p>iOS-style DateTime Picker & Calendar Demo</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('wheel-datetime')">⏰ DateTime Wheel</button>
+            <button class="tab-btn" onclick="switchTab('wheel-date')">📅 Date Wheel</button>
+            <button class="tab-btn" onclick="switchTab('wheel-time')">🕐 Time Wheel</button>
+            <button class="tab-btn" onclick="switchTab('inline-mode')">📍 Inline Mode</button>
+        </div>
+
+        <!-- DateTime Wheel -->
+        <div id="wheel-datetime" class="demo-section active">
+            <div class="demo-title">⏰ DateTime Wheel Picker</div>
+            <p class="description">Select both date and time using an iOS-style wheel. Tap "Confirm" or the button below to apply your selection.</p>
+            <div class="picker-container">
+                <div id="wheel-datetime-picker"></div>
+            </div>
+            <div class="button-group">
+                <button class="action-btn" onclick="document.getElementById('wheel-datetime-picker').__picker?.show()">Open Picker</button>
+            </div>
+            <div class="output" id="wheel-datetime-output">
+                Select a date and time
+            </div>
+        </div>
+
+        <!-- Date Wheel -->
+        <div id="wheel-date" class="demo-section">
+            <div class="demo-title">📅 Date Only Wheel Picker</div>
+            <p class="description">Pick just the date without time selection. Perfect for birthday or event date selection.</p>
+            <div class="picker-container">
+                <div id="wheel-date-picker"></div>
+            </div>
+            <div class="button-group">
+                <button class="action-btn" onclick="document.getElementById('wheel-date-picker').__picker?.show()">Open Picker</button>
+            </div>
+            <div class="output" id="wheel-date-output">
+                Select a date
+            </div>
+        </div>
+
+        <!-- Time Wheel -->
+        <div id="wheel-time" class="demo-section">
+            <div class="demo-title">🕐 Time Only Wheel Picker</div>
+            <p class="description">Select only the time with hour and minute columns. Ideal for alarm or appointment time selection.</p>
+            <div class="picker-container">
+                <div id="wheel-time-picker"></div>
+            </div>
+            <div class="button-group">
+                <button class="action-btn" onclick="document.getElementById('wheel-time-picker').__picker?.show()">Open Picker</button>
+            </div>
+            <div class="output" id="wheel-time-output">
+                Select a time
+            </div>
+        </div>
+
+        <!-- Inline Mode -->
+        <div id="inline-mode" class="demo-section">
+            <div class="demo-title">📍 Inline Display Mode</div>
+            <p class="description">The picker is always visible and embedded directly in the page. Perfect for dedicated date selection areas.</p>
+            <div class="picker-container inline">
+                <div id="inline-picker"></div>
+            </div>
+            <div class="output" id="inline-output">
+                Select a date and time
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+</body>
+</html>
