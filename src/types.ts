@@ -137,6 +137,12 @@ export interface PickerOptions {
   visibleRows?: number;
 
   /**
+   * Width of the picker (e.g. "320px", "100%"). Useful to constrain popover width.
+   * Defaults to "100%" (but capped by max-width in CSS).
+   */
+  width?: string;
+
+  /**
    * Whether to enable the 3D cylindrical wheel effect. Defaults to true.
    */
   is3D?: boolean;
@@ -208,6 +214,7 @@ export interface ResolvedOptions {
   primaryColor: string;
   itemHeight: number;
   visibleRows: number;
+  width: string;
   is3D: boolean;
   onChange?: PickerOptions["onChange"];
   onConfirm?: PickerOptions["onConfirm"];

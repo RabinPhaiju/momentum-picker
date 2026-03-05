@@ -1,0 +1,127 @@
+/* wheel/layout.css — Overlay, sheet, columns, items, and display modes */
+
+/* ── Overlay / Backdrop ───────────────────────────────────────────────────── */
+.mp-overlay {
+  position: fixed; inset: 0;
+  background: var(--mp-overlay);
+  z-index: 1000;
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; visibility: hidden;
+  transition: opacity var(--mp-transition-speed) ease, visibility var(--mp-transition-speed);
+  pointer-events: none;
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.mp-overlay.mp-visible { opacity: 1; visibility: visible; pointer-events: all; }
+
+/* ── Sheet ────────────────────────────────────────────────────────────────── */
+.mp-sheet {
+  background: var(--mp-bg);
+  border-radius: var(--mp-border-radius) var(--mp-border-radius) 0 0;
+  box-shadow: var(--mp-shadow);
+  width: 100%; max-width: 480px;
+  overflow: hidden;
+  transform: translateY(100%);
+  transition: transform var(--mp-transition-speed) cubic-bezier(0.32, 0.72, 0, 1);
+  font-family: var(--mp-font-family);
+  overscroll-behavior: contain;
+  user-select: none; -webkit-user-select: none;
+}
+.mp-overlay.mp-visible .mp-sheet { transform: translateY(0); }
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.mp-header {
+  display: flex; align-items: center; justify-content: space-between;
+  height: var(--mp-header-height); padding: 0 16px;
+  border-bottom: 0.5px solid var(--mp-border);
+}
+.mp-header-title { font-size: var(--mp-font-size-header); font-weight: 600; color: var(--mp-text); flex: 1; text-align: center; }
+.mp-btn { background: none; border: none; cursor: pointer; font-size: var(--mp-font-size-header); padding: 8px 12px; min-width: 70px; font-family: inherit; transition: opacity 200ms, background 200ms; -webkit-tap-highlight-color: transparent; border-radius: 10px; }
+.mp-btn:hover { background: rgba(0, 0, 0, 0.05); }
+.mp-btn:active { opacity: 0.6; }
+[data-mp-theme="dark"] .mp-btn:hover, [data-mp-style="black"] .mp-btn:hover { background: rgba(255, 255, 255, 0.05); }
+.mp-btn-cancel { color: var(--mp-primary); text-align: left; }
+.mp-btn-confirm { color: var(--mp-primary); font-weight: 600; text-align: right; }
+
+/* ── Columns Container ────────────────────────────────────────────────────── */
+.mp-columns {
+  display: flex; align-items: stretch; position: relative;
+  height: calc(var(--mp-visible-rows) * var(--mp-item-height));
+  overflow: hidden; perspective: 1000px;
+}
+
+/* ── Selection Band ───────────────────────────────────────────────────────── */
+.mp-selection-band {
+  position: absolute; left: 0; right: 0;
+  top: calc(50% - var(--mp-item-height) / 2);
+  height: var(--mp-item-height);
+  background: var(--mp-selection-bg);
+  border-top: 0.5px solid var(--mp-border); border-bottom: 0.5px solid var(--mp-border);
+  pointer-events: none; z-index: 0;
+  margin: 0 10px; border-radius: 10px; border: none;
+}
+
+/* ── Gradient Fade ────────────────────────────────────────────────────────── */
+.mp-columns::before, .mp-columns::after {
+  content: ""; position: absolute; left: 0; right: 0;
+  height: calc(var(--mp-visible-rows) * var(--mp-item-height) / 2 - 10px);
+  z-index: 3; pointer-events: none;
+}
+.mp-columns::before { top: 0; background: linear-gradient(to bottom, var(--mp-bg) 15%, transparent 100%); }
+.mp-columns::after { bottom: 0; background: linear-gradient(to top, var(--mp-bg) 15%, transparent 100%); }
+[data-mp-style="glass"] .mp-columns::before, [data-mp-style="glass"] .mp-columns::after { display: none; }
+
+/* ── Column ───────────────────────────────────────────────────────────────── */
+.mp-column { flex: 1; position: relative; overflow: visible; touch-action: none; cursor: grab; transform-style: preserve-3d; z-index: 1; }
+.mp-column:active { cursor: grabbing; }
+.mp-column + .mp-column { border-left: none; }
+
+/* ── Time Separator ───────────────────────────────────────────────────────── */
+.mp-time-separator {
+  display: flex; align-items: center; justify-content: center;
+  width: 20px; min-width: 20px;
+  font-size: var(--mp-font-size-item); font-weight: var(--mp-font-weight-item);
+  color: var(--mp-text); pointer-events: none; user-select: none;
+  flex-shrink: 0; z-index: 2; position: relative;
+}
+
+/* ── Item List & Items ────────────────────────────────────────────────────── */
+.mp-column-list { list-style: none; margin: 0; padding: 0; will-change: transform; transform-style: preserve-3d; }
+.mp-column-item {
+  display: flex; align-items: center; justify-content: center;
+  height: var(--mp-item-height);
+  font-size: var(--mp-font-size-item); font-weight: var(--mp-font-weight-item);
+  color: var(--mp-text);
+  transition: color 150ms ease, opacity 150ms ease;
+  white-space: nowrap; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+}
+.mp-column-item[aria-selected="true"] { color: var(--mp-text); font-weight: var(--mp-font-weight-selected); }
+.mp-column-item[aria-selected="false"] { opacity: 0.3; }
+.mp-column-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+
+/* ── Inline mode ─────────────────────────────────────────────────────────── */
+.mp-inline {
+  font-family: var(--mp-font-family); background: var(--mp-bg);
+  border-radius: var(--mp-border-radius); border: 1px solid var(--mp-border);
+  overflow: hidden; user-select: none; -webkit-user-select: none;
+  box-shadow: var(--mp-shadow); transform: none; transition: none; max-width: 100%;
+}
+.mp-inline .mp-selection-band { margin: 0; left: 0; right: 0; border-radius: 0; }
+
+/* ── Popover mode ────────────────────────────────────────────────────────── */
+.mp-popover {
+  position: fixed; z-index: 1000;
+  transform: translateY(10px) scale(0.98);
+  opacity: 0; visibility: hidden;
+  transition: opacity 200ms ease, transform 200ms ease, visibility 200ms;
+  border-radius: var(--mp-border-radius); border: 1px solid var(--mp-border);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  display: none; max-width: min(448px, calc(100vw - 16px)); width: var(--mp-width, auto); max-height: calc(100vh - 16px);
+  overflow: auto; -webkit-overflow-scrolling: touch;
+}
+.mp-popover.mp-visible { transform: translateY(0) scale(1); opacity: 1; visibility: visible; display: block; }
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (min-width: 480px) {
+  .mp-sheet:not(.mp-inline):not(.mp-popover) { border-radius: var(--mp-border-radius); margin-bottom: 24px; border: 0.5px solid var(--mp-border); }
+  .mp-overlay { align-items: center; }
+}

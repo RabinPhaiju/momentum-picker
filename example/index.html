@@ -723,15 +723,96 @@
         </div>
       </section>
 
-      <!-- ── Section 7: Style Showcase ── -->
+      <!-- ── Section 7: Advanced DatePicker Features ── -->
+      <section class="section">
+        <div class="section-title">🆕 Advanced DatePicker Features</div>
+        <div class="grid">
+          <!-- 7a. Range Presets -->
+          <div class="card">
+            <div class="card-title">📅 Range Presets</div>
+            <div id="dp-presets"></div>
+            <div class="result" id="r-presets">
+              Select a preset or pick a range…
+            </div>
+          </div>
+
+          <!-- 7b. Footer Position: Top -->
+          <div class="card">
+            <div class="card-title">⬆️ Footer Position: Top</div>
+            <div id="dp-footer-top"></div>
+            <div class="result" id="r-footer-top">Waiting…</div>
+          </div>
+
+          <!-- 7c. Datetime Seconds -->
+          <div class="card">
+            <div class="card-title">⏱️ Datetime with Seconds</div>
+            <div id="dp-datetime-sec"></div>
+            <div class="result" id="r-datetime-sec">Pick a date + time…</div>
+          </div>
+
+          <!-- 7d. Clipboard Paste -->
+          <div class="card">
+            <div class="card-title">📋 Paste from Clipboard</div>
+            <p style="font-size: 12px; color: var(--text2); margin: 0 0 8px">
+              Copy any date string (e.g. <code>2026-06-15</code> or
+              <code>June 15, 2026</code>), click the calendar below, then press
+              <kbd>Ctrl/Cmd+V</kbd>.
+            </p>
+            <div id="dp-paste"></div>
+            <div class="result" id="r-paste">Waiting for paste…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 8: Style Showcase ── -->
       <section class="section">
         <div class="section-title">🎨 Style Showcase</div>
         <!-- Display Mode Switcher -->
-        <div style="margin-bottom: 24px; display: flex; gap: 8px; justify-content: flex-start; flex-wrap: nowrap; width: fit-content;">
-          <button class="btn" id="mode-switcher-modal" style="background: var(--accent); border: 1.5px solid var(--accent); color: #fff; width: 100px;">Modal</button>
-          <button class="btn outline" id="mode-switcher-popover" style="width: 100px;">Popover</button>
-          <button class="btn outline" id="mode-switcher-inline" style="width: 100px;">Inline</button>
-          <span style="align-self: center; margin-left: 16px; font-size: 12px; color: var(--text2);">Currently showing: <strong id="current-mode">Modal</strong></span>
+        <div
+          style="
+            margin-bottom: 24px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-start;
+            flex-wrap: nowrap;
+            width: fit-content;
+          "
+        >
+          <button
+            class="btn"
+            id="mode-switcher-modal"
+            style="
+              background: var(--accent);
+              border: 1.5px solid var(--accent);
+              color: #fff;
+              width: 100px;
+            "
+          >
+            Modal
+          </button>
+          <button
+            class="btn outline"
+            id="mode-switcher-popover"
+            style="width: 100px"
+          >
+            Popover
+          </button>
+          <button
+            class="btn outline"
+            id="mode-switcher-inline"
+            style="width: 100px"
+          >
+            Inline
+          </button>
+          <span
+            style="
+              align-self: center;
+              margin-left: 16px;
+              font-size: 12px;
+              color: var(--text2);
+            "
+            >Currently showing: <strong id="current-mode">Modal</strong></span
+          >
         </div>
         <div class="grid" id="style-grid">
           <!-- Dynamic cards will be injected by JS -->
@@ -1142,6 +1223,129 @@
       allDPs.push(dpRenderDay);
 
       // ═══════════════════════════════════════════════════════════════════════
+      // Section 7 — Advanced DatePicker Features (New!)
+      // ═══════════════════════════════════════════════════════════════════════
+
+      // ── 7a. Range Presets ──────────────────────────────────────────────────
+      const _today = new Date();
+      const _yesterday = new Date(_today);
+      _yesterday.setDate(_today.getDate() - 1);
+      const _last7Start = new Date(_today);
+      _last7Start.setDate(_today.getDate() - 6);
+      const _monthStart = new Date(_today.getFullYear(), _today.getMonth(), 1);
+      const _monthEnd = new Date(
+        _today.getFullYear(),
+        _today.getMonth() + 1,
+        0,
+      );
+
+      const dpPresets = new DatePicker({
+        container: "#dp-presets",
+        displayMode: "inline",
+        mode: "range",
+        showToday: false,
+        showClear: true,
+        format: "YYYY-MM-DD",
+        presets: [
+          { label: "Today", value: [_today, _today] },
+          { label: "Yesterday", value: [_yesterday, _yesterday] },
+          { label: "Last 7 days", value: [_last7Start, _today] },
+          { label: "This month", value: [_monthStart, _monthEnd] },
+          { label: "or", isDivider: true },
+          {
+            label: "Next 7 days",
+            value: () => {
+              const s = new Date();
+              s.setDate(s.getDate() + 1);
+              const e = new Date();
+              e.setDate(e.getDate() + 7);
+              return [s, e];
+            },
+          },
+        ],
+        onChange: (v, fmt) => {
+          if (Array.isArray(v) && v[0] && v[1]) {
+            const f = Array.isArray(fmt) ? fmt.join(" → ") : "";
+            document.getElementById("r-presets").innerHTML = `<em>${f}</em>`;
+          } else if (Array.isArray(v) && v[0]) {
+            document.getElementById("r-presets").innerHTML =
+              `Start: <em>${Array.isArray(fmt) ? fmt[0] : ""}</em> — pick end`;
+          } else {
+            document.getElementById("r-presets").textContent =
+              "Select a preset or pick a range…";
+          }
+        },
+      });
+      allDPs.push(dpPresets);
+
+      // ── 7b. Footer Position: Top ───────────────────────────────────────────
+      const dpFooterTop = new DatePicker({
+        container: "#dp-footer-top",
+        displayMode: "inline",
+        mode: "single",
+        footerPosition: "top",
+        showToday: true,
+        showClear: true,
+        footerButtons: [
+          {
+            label: "Month Start",
+            onClick: (picker) => {
+              const d = new Date(picker._viewYear, picker._viewMonth, 1);
+              picker.setValue(d);
+              picker._emitChange();
+            },
+          },
+        ],
+        format: "YYYY-MM-DD",
+        onChange: (v, fmt) => {
+          document.getElementById("r-footer-top").innerHTML = v
+            ? `onChange → <em>${fmt ?? v}</em>`
+            : "Cleared";
+        },
+      });
+      allDPs.push(dpFooterTop);
+
+      // ── 7c. Datetime with Seconds ──────────────────────────────────────────
+      const dpDatetimeSec = new DatePicker({
+        container: "#dp-datetime-sec",
+        displayMode: "inline",
+        mode: "datetime-seconds",
+        showToday: true,
+        showClear: true,
+        format: "YYYY-MM-DD",
+        onChange: (v) => {
+          if (v instanceof Date) {
+            const pad = (n) => String(n).padStart(2, "0");
+            const iso =
+              `${v.getFullYear()}-${pad(v.getMonth() + 1)}-${pad(v.getDate())} ` +
+              `${pad(v.getHours())}:${pad(v.getMinutes())}:${pad(v.getSeconds())}`;
+            document.getElementById("r-datetime-sec").innerHTML =
+              `<em>${iso}</em>`;
+          } else {
+            document.getElementById("r-datetime-sec").textContent =
+              "Pick a date + time…";
+          }
+        },
+      });
+      allDPs.push(dpDatetimeSec);
+
+      // ── 7d. Clipboard Paste ────────────────────────────────────────────────
+      const dpPaste = new DatePicker({
+        container: "#dp-paste",
+        displayMode: "inline",
+        mode: "single",
+        allowPaste: true,
+        showClear: true,
+        format: "YYYY-MM-DD",
+        onChange: (v, fmt) => {
+          document.getElementById("r-paste").innerHTML = v
+            ? `📋 Pasted & selected: <em>${fmt ?? v}</em>`
+            : "Cleared";
+        },
+      });
+      allDPs.push(dpPaste);
+
+      // ═══════════════════════════════════════════════════════════════════════
       // 13. iOS Wheel Pickers
       // ═══════════════════════════════════════════════════════════════════════
       const wheelDate = new MomentumPicker({
@@ -1425,17 +1629,19 @@
           modeButtonInline.style.background = "transparent";
           modeButtonInline.style.color = "var(--accent)";
         }
-        [modeButtonModal, modeButtonPopover, modeButtonInline].forEach((btn) => {
-          if (
-            (mode === "modal" && btn === modeButtonModal) ||
-            (mode === "popover" && btn === modeButtonPopover) ||
-            (mode === "inline" && btn === modeButtonInline)
-          ) {
-            btn.classList.add("active");
-          } else {
-            btn.classList.remove("active");
-          }
-        });
+        [modeButtonModal, modeButtonPopover, modeButtonInline].forEach(
+          (btn) => {
+            if (
+              (mode === "modal" && btn === modeButtonModal) ||
+              (mode === "popover" && btn === modeButtonPopover) ||
+              (mode === "inline" && btn === modeButtonInline)
+            ) {
+              btn.classList.add("active");
+            } else {
+              btn.classList.remove("active");
+            }
+          },
+        );
 
         // Toggle visibility of buttons and inline containers
         styles.forEach((style) => {

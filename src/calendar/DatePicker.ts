@@ -16,6 +16,8 @@ import type {
   ViewMode,
   DayRenderInfo,
   PickerValue,
+  FooterButton,
+  DatePreset,
 } from "./types";
 
 // ── Builder methods ─────────────────────────────────────────────────────────
@@ -31,6 +33,7 @@ import {
   buildYearPanel,
   hasFooter,
   buildFooter,
+  buildTimePicker,
 } from "./builders";
 
 // ── Handler methods ─────────────────────────────────────────────────────────
@@ -52,6 +55,9 @@ import {
   emitChange,
   emitConfirm,
   showValidationError,
+  handleTouchStart,
+  handleTouchEnd,
+  handlePaste,
 } from "./handlers";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -76,6 +82,15 @@ export class DatePicker {
   // Year panel: current decade start
   _decadeStart: number;
 
+  // Time picker state
+  _selectedHour = 0;
+  _selectedMinute = 0;
+  _selectedSecond = 0;
+
+  // Touch/swipe tracking
+  _touchStartX = 0;
+  _touchStartY = 0;
+
   // ── DOM roots ──────────────────────────────────────────────────────────────
   _containerEl: HTMLElement | null = null;
   _anchorEl: HTMLElement | null = null;
@@ -88,6 +103,7 @@ export class DatePicker {
   private _boundKeydown: ((e: KeyboardEvent) => void) | null = null;
   private _boundMouseup: ((e: MouseEvent) => void) | null = null;
   private _boundOutsideClick: ((e: MouseEvent) => void) | null = null;
+  private _boundPaste: ((e: ClipboardEvent) => void) | null = null;
 
   _focusedCellDate: Date | null = null;
 
@@ -142,6 +158,7 @@ export class DatePicker {
   // ── Option Resolution ─────────────────────────────────────────────────────
 
   private _resolveOptions(opts: DatePickerOptions): ResolvedDPOptions {
+    const isDatetimeSeconds = opts.mode === "datetime-seconds";
     return {
       displayMode: opts.displayMode ?? "inline",
       mode: opts.mode ?? "single",
@@ -162,6 +179,12 @@ export class DatePicker {
       showActions:
         opts.showActions ??
         (opts.displayMode === "modal" || opts.displayMode === "popover"),
+      footerButtons: opts.footerButtons ?? null,
+      presets: opts.presets ?? null,
+      footerPosition: opts.footerPosition ?? "bottom",
+      showTimePicker: opts.showTimePicker ?? isDatetimeSeconds,
+      showSeconds: opts.showSeconds ?? isDatetimeSeconds,
+      allowPaste: opts.allowPaste ?? false,
       theme: opts.theme ?? "light",
       primaryColor: opts.primaryColor ?? "#007aff",
       className: opts.className ?? "",
@@ -259,6 +282,16 @@ export class DatePicker {
       this._boundOutsideClick = this._handleOutsideClick.bind(this);
       document.addEventListener("click", this._boundOutsideClick, true);
     }
+
+    // Clipboard paste detection
+    if (this.opts.allowPaste) {
+      this._boundPaste = this._handlePaste.bind(this);
+      if (this._boundPaste) document.addEventListener("paste", this._boundPaste);
+    }
+
+    // Touch swipe gestures — attached after panel is created
+    // (done in _show / after mount so panel exists)
+    this._attachTouchListeners();
   }
 
   // ── Refresh ───────────────────────────────────────────────────────────────
@@ -287,6 +320,7 @@ export class DatePicker {
   _buildYearPanel = buildYearPanel;
   _hasFooter = hasFooter;
   _buildFooter = buildFooter;
+  _buildTimePicker = buildTimePicker;
 
   // ── Handler methods (from ./handlers.ts) ───────────────────────────────────
   _handleDayClick = handleDayClick;
@@ -306,6 +340,17 @@ export class DatePicker {
   _emitChange = emitChange;
   _emitConfirm = emitConfirm;
   _showValidationError = showValidationError;
+  _handleTouchStart = handleTouchStart;
+  _handleTouchEnd = handleTouchEnd;
+  _handlePaste = handlePaste;
+
+  // ── Touch listener attachment ──────────────────────────────────────────────
+  _attachTouchListeners(): void {
+    const panel = this._getPanel();
+    if (!panel) return;
+    panel.addEventListener("touchstart", (e: TouchEvent) => this._handleTouchStart(e), { passive: true });
+    panel.addEventListener("touchend", (e: TouchEvent) => this._handleTouchEnd(e), { passive: true });
+  }
 
   // ── Public API ────────────────────────────────────────────────────────────
 
@@ -378,10 +423,10 @@ export class DatePicker {
     if (this._boundKeydown) document.removeEventListener("keydown", this._boundKeydown);
     if (this._boundMouseup) window.removeEventListener("mouseup", this._boundMouseup);
     if (this._boundOutsideClick) document.removeEventListener("click", this._boundOutsideClick, true);
+    if (this._boundPaste) document.removeEventListener("paste", this._boundPaste);
     this._stopAutoUpdate?.();
     this._overlayEl?.remove();
     this._overlayEl = null;
     this._panelEl = null;
-
   }
 }

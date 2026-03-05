@@ -1,88 +1,48 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// MomentumPicker.ts — Main orchestrator class.
-//
-// Responsibilities:
-//   • Parse and validate PickerOptions (fill defaults)
-//   • Build ColumnDef arrays based on mode (date / time / datetime)
-//   • Instantiate WheelColumn instances
-//   • Render the overlay + sheet chrome (header, columns, selection band)
-//   • Synchronise column changes into an internal Date value
-//   • Re-build day column when month/year changes (days-in-month)
-//   • Forward onChange / onConfirm / onCancel
-//   • Provide a clean public API: show/hide/destroy/getValue/setValue
-// ─────────────────────────────────────────────────────────────────────────────
+// MomentumPicker.ts — Slim orchestrator (uses wheel/ sub-modules)
 
 import "./styles/wheel.css";
 
 import { createAutoUpdater } from "./calendar/positioning";
 import type { PopoverPlacement } from "./calendar/positioning";
-
-import type {
-  PickerOptions,
-  ResolvedOptions,
-  ColumnDef,
-  ColumnItem,
-} from "./types";
+import type { PickerOptions, ResolvedOptions, ColumnDef } from "./types";
 import { WheelColumn } from "./WheelColumn";
+import { cloneDate, formatDate } from "./utils";
 import {
-  getDaysInMonth,
-  generateRange,
-  padZero,
-  formatDate,
-  getMonthNames,
-  cloneDate,
-  clamp,
-} from "./utils";
-
-// ── Year range ─────────────────────────────────────────────────────────────────
-const DEFAULT_MIN_YEAR = 1924;
-const DEFAULT_MAX_YEAR = 2124;
-
-// ─────────────────────────────────────────────────────────────────────────────
+  buildColumnDefs,
+  buildYearItems,
+  buildMonthItems,
+  buildDayItems,
+  buildMinuteItems,
+} from "./wheel/column-data";
+import { buildOverlay, buildSheet, buildHeader, buildColumnsEl } from "./wheel/render";
+import { getDaysInMonth, clamp } from "./utils";
 
 export class MomentumPicker {
-  // ── Config ──────────────────────────────────────────────────────────────────
   private opts: ResolvedOptions;
   private containerEl: HTMLElement;
-
-  // ── Internal date state ─────────────────────────────────────────────────────
   private _value: Date;
 
-  // ── DOM ─────────────────────────────────────────────────────────────────────
   private overlay: HTMLDivElement | null = null;
   private sheet: HTMLDivElement | null = null;
   private columnsEl: HTMLDivElement | null = null;
   private anchorEl: HTMLElement | null = null;
-
   private _stopAutoUpdate: (() => void) | null = null;
   private _boundOutsideClick: ((e: MouseEvent) => void) | null = null;
-
-  // ── Columns ─────────────────────────────────────────────────────────────────
   private columns: Map<string, WheelColumn> = new Map();
 
-  // ─────────────────────────────────────────────────────────────────────────────
-
   constructor(options: PickerOptions) {
-    this.opts = this.resolveOptions(options);
-    
-    // Resolve DOM mounts
+    this.opts = this._resolveOptions(options);
     if (this.opts.displayMode === "popover" && options.anchor) {
-      this.anchorEl = this.resolveContainer(options.anchor);
+      this.anchorEl = this._resolveEl(options.anchor);
       this.containerEl = document.body;
-    } else if (this.opts.displayMode === "modal") {
-      this.containerEl = this.resolveContainer(options.container || document.body);
     } else {
-      this.containerEl = this.resolveContainer(options.container || document.body);
+      this.containerEl = this._resolveEl(options.container || document.body);
     }
-
     this._value = cloneDate(this.opts.value);
-
-    this.render();
+    this._render();
   }
 
-  // ── Option Resolution ────────────────────────────────────────────────────────
-
-  private resolveOptions(opts: PickerOptions): ResolvedOptions {
+  private _resolveOptions(opts: PickerOptions): ResolvedOptions {
     return {
       displayMode: opts.displayMode ?? "modal",
       mode: opts.mode ?? "datetime",
@@ -97,6 +57,7 @@ export class MomentumPicker {
       primaryColor: opts.primaryColor ?? "#007aff",
       itemHeight: opts.itemHeight ?? 44,
       visibleRows: opts.visibleRows ?? 5,
+      width: opts.width ?? "100%",
       is3D: opts.is3D ?? true,
       onChange: opts.onChange,
       onConfirm: opts.onConfirm,
@@ -104,519 +65,178 @@ export class MomentumPicker {
     };
   }
 
-  // ── Container Resolution ────────────────────────────────────────────────────
-
-  private resolveContainer(container: string | HTMLElement): HTMLElement {
-    if (typeof container === "string") {
-      const el = document.querySelector<HTMLElement>(container);
-      if (!el) throw new Error(`[MomentumPicker] Container "${container}" not found`);
-      return el;
+  private _resolveEl(el: string | HTMLElement): HTMLElement {
+    if (typeof el === "string") {
+      const found = document.querySelector<HTMLElement>(el);
+      if (!found) throw new Error(`[MomentumPicker] Element "${el}" not found`);
+      return found;
     }
-    return container;
+    return el;
   }
 
-  // ── Column Data Builders ────────────────────────────────────────────────────
-
-  private buildYearItems(): ColumnItem[] {
-    const minY = this.opts.minDate?.getFullYear() ?? DEFAULT_MIN_YEAR;
-    const maxY = this.opts.maxDate?.getFullYear() ?? DEFAULT_MAX_YEAR;
-    return generateRange(minY, maxY).map((y) => ({ label: String(y), value: y }));
-  }
-
-  private buildMonthItems(): ColumnItem[] {
-    const names = getMonthNames(this.opts.locale);
-    return names.map((name, i) => ({ label: name, value: i }));
-  }
-
-  private buildDayItems(year: number, month: number): ColumnItem[] {
-    const days = getDaysInMonth(year, month);
-    return generateRange(1, days).map((d) => ({
-      label: padZero(d),
-      value: d,
-    }));
-  }
-
-  private buildHourItems(): ColumnItem[] {
-    return generateRange(0, 23).map((h) => ({
-      label: padZero(h),
-      value: h,
-    }));
-  }
-
-  private buildMinuteItems(): ColumnItem[] {
-    const step = this.opts.minuteStep;
-    return generateRange(0, 59, step).map((m) => ({
-      label: padZero(m),
-      value: m,
-    }));
-  }
-
-  // ── Column Def Builders ────────────────────────────────────────────────────
-
-  private buildColumnDefs(): ColumnDef[] {
-    const v = this._value;
-    const defs: ColumnDef[] = [];
-    const { mode } = this.opts;
-
-    if (mode === "date" || mode === "datetime") {
-      // Year
-      const yearItems = this.buildYearItems();
-      const yearIdx = yearItems.findIndex((i) => i.value === v.getFullYear());
-      defs.push({
-        key: "year",
-        ariaLabel: "Year",
-        items: yearItems,
-        selectedIndex: clamp(yearIdx, 0, yearItems.length - 1),
-        onSelect: (idx) => this.handleColumnSelect("year", idx),
-      });
-
-      // Month
-      const monthItems = this.buildMonthItems();
-      defs.push({
-        key: "month",
-        ariaLabel: "Month",
-        items: monthItems,
-        selectedIndex: v.getMonth(),
-        onSelect: (idx) => this.handleColumnSelect("month", idx),
-      });
-
-      // Day
-      const dayItems = this.buildDayItems(v.getFullYear(), v.getMonth());
-      const dayIdx = Math.min(v.getDate() - 1, dayItems.length - 1);
-      defs.push({
-        key: "day",
-        ariaLabel: "Day",
-        items: dayItems,
-        selectedIndex: dayIdx,
-        onSelect: (idx) => this.handleColumnSelect("day", idx),
-      });
-    }
-
-    if (mode === "time" || mode === "datetime") {
-      // Hour
-      defs.push({
-        key: "hour",
-        ariaLabel: "Hour",
-        items: this.buildHourItems(),
-        selectedIndex: v.getHours(),
-        onSelect: (idx) => this.handleColumnSelect("hour", idx),
-      });
-
-      // Minute
-      const minuteItems = this.buildMinuteItems();
-      const step = this.opts.minuteStep;
-      const snappedMinute = Math.round(v.getMinutes() / step) * step;
-      const minuteIdx = minuteItems.findIndex((i) => i.value === snappedMinute);
-      defs.push({
-        key: "minute",
-        ariaLabel: "Minute",
-        items: minuteItems,
-        selectedIndex: clamp(minuteIdx, 0, minuteItems.length - 1),
-        onSelect: (idx) => this.handleColumnSelect("minute", idx),
-      });
-    }
-
-    return defs;
-  }
-
-  // ── Column Change Handler ────────────────────────────────────────────────────
-
-  private handleColumnSelect(
-    key: ColumnDef["key"],
-    index: number,
-  ): void {
-    const col = this.columns.get(key);
-    if (!col) return;
-    const value = col.getValue();
-
-    switch (key) {
-      case "year": {
-        // Clamp day before changing year to avoid JS Date rollover
-        // e.g. Feb 29 on leap year → non-leap year would roll to Mar 1
-        const newYear = value;
-        const maxDayForYear = getDaysInMonth(newYear, this._value.getMonth());
-        this._value.setDate(Math.min(this._value.getDate(), maxDayForYear));
-        this._value.setFullYear(newYear);
-        this.refreshDayColumn();
-        break;
-      }
-      case "month": {
-        // Clamp day before changing month to prevent JS Date rollover
-        // e.g. Jan 31 → Feb would roll over to Mar 2/3
-        const newMonth = value;
-        const maxDayForMonth = getDaysInMonth(this._value.getFullYear(), newMonth);
-        this._value.setDate(Math.min(this._value.getDate(), maxDayForMonth));
-        this._value.setMonth(newMonth);
-        this.refreshDayColumn();
-        break;
-      }
-      case "day":
-        this._value.setDate(value);
-        break;
-      case "hour":
-        this._value.setHours(value);
-        break;
-      case "minute":
-        this._value.setMinutes(value);
-        break;
-    }
-
-    void index; // suppress unused param lint for now
-
-    this.emitChange();
-  }
-
-  /**
-   * When year or month changes, the days column must be rebuilt
-   * because months have different lengths.
-   */
-  private refreshDayColumn(): void {
-    const dayCol = this.columns.get("day");
-    if (!dayCol) return;
-
-    const y = this._value.getFullYear();
-    const m = this._value.getMonth();
-    const newDayItems = this.buildDayItems(y, m);
-    const maxDay = newDayItems.length;
-
-    // Clamp the current day to the new maximum
-    const currentDay = clamp(this._value.getDate(), 1, maxDay);
-    this._value.setDate(currentDay);
-    const newDayIdx = currentDay - 1;
-
-    dayCol.updateItems(newDayItems, newDayIdx);
-  }
-
-  // ── Event Emitters ──────────────────────────────────────────────────────────
-
-  private emitChange(): void {
-    const date = cloneDate(this._value);
-    const formatted = this.opts.format
-      ? formatDate(date, this.opts.format, this.opts.locale)
-      : undefined;
-    this.opts.onChange?.(date, formatted);
-  }
-
-  private emitConfirm(): void {
-    const date = cloneDate(this._value);
-    const formatted = this.opts.format
-      ? formatDate(date, this.opts.format, this.opts.locale)
-      : undefined;
-    this.opts.onConfirm?.(date, formatted);
-  }
-
-  // ── DOM Rendering ───────────────────────────────────────────────────────────
-
-  private render(): void {
-    const container = this.containerEl;
-
-    // ── Overlay (backdrop) ──────────────────────────────────────────────────
+  private _render(): void {
     if (this.opts.displayMode === "modal") {
-      this.overlay = document.createElement("div");
-      this.overlay.className = "mp-overlay";
-      this.overlay.setAttribute("role", "dialog");
-      this.overlay.setAttribute("aria-modal", "true");
-      this.overlay.setAttribute("aria-label", "Date Time Picker");
-      this.overlay.dataset.mpTheme = this.opts.theme;
-      this.overlay.dataset.mpStyle = this.opts.style;
-
-      // Close on backdrop click
-      this.overlay.addEventListener("click", (e) => {
-        if (e.target === this.overlay) {
-          this.opts.onCancel?.();
-          this.hide();
-        }
-      });
+      this.overlay = buildOverlay(this.opts, () => { this.opts.onCancel?.(); this.hide(); });
     }
+    this.sheet = buildSheet(this.opts);
 
-    // ── Sheet ───────────────────────────────────────────────────────────────
-    this.sheet = document.createElement("div");
-    this.sheet.className = "mp-sheet";
-
-    // Display Mode Styling
-    if (this.opts.displayMode === "inline") {
-      this.sheet.classList.add("mp-inline");
-    } else if (this.opts.displayMode === "popover") {
-      this.sheet.classList.add("mp-popover");
-    }
-
-    this.sheet.dataset.mpTheme = this.opts.theme;
-    this.sheet.dataset.mpStyle = this.opts.style;
-
-    // Apply CSS custom properties
-    this.applyCustomProperties(this.sheet);
-
-    // ── Header ──────────────────────────────────────────────────────────────
     if (this.opts.displayMode !== "inline") {
-      const header = document.createElement("div");
-      header.className = "mp-header";
-
-      const cancelBtn = document.createElement("button");
-      cancelBtn.className = "mp-btn mp-btn-cancel";
-      cancelBtn.textContent = "Cancel";
-      cancelBtn.setAttribute("aria-label", "Cancel date selection");
-      cancelBtn.addEventListener("click", () => {
-        this.opts.onCancel?.();
-        this.hide();
-      });
-
-      const title = document.createElement("div");
-      title.className = "mp-header-title";
-      title.textContent = this.getTitleByMode();
-
-      const confirmBtn = document.createElement("button");
-      confirmBtn.className = "mp-btn mp-btn-confirm";
-      confirmBtn.textContent = "Done";
-      confirmBtn.setAttribute("aria-label", "Confirm date selection");
-      confirmBtn.addEventListener("click", () => {
-        this.emitConfirm();
-        this.hide();
-      });
-
-      header.appendChild(cancelBtn);
-      header.appendChild(title);
-      header.appendChild(confirmBtn);
-      this.sheet.appendChild(header);
+      this.sheet.appendChild(buildHeader(this.opts,
+        () => { this.opts.onCancel?.(); this.hide(); },
+        () => { this._emitConfirm(); this.hide(); },
+      ));
     }
 
-    // ── Columns container ───────────────────────────────────────────────────
-    this.columnsEl = document.createElement("div");
-    this.columnsEl.className = "mp-columns";
-
-    // Apply CSS variable for item height and visible rows
-    this.columnsEl.style.setProperty(
-      "--mp-item-height",
-      `${this.opts.itemHeight}px`,
+    this.columnsEl = buildColumnsEl(
+      buildColumnDefs(this.opts, this._value, (key, idx) => this._onColumnSelect(key, idx)),
+      this.opts,
+      WheelColumn as unknown as new (...args: unknown[]) => WheelColumn,
+      this.columns,
     );
-    this.columnsEl.style.setProperty(
-      "--mp-visible-rows",
-      String(this.opts.visibleRows),
-    );
-
-    // Selection indicator band (the "highlight" row in the middle)
-    const selectionBand = document.createElement("div");
-    selectionBand.className = "mp-selection-band";
-    selectionBand.setAttribute("aria-hidden", "true");
-
-    this.columnsEl.appendChild(selectionBand);
-
-    // ── Instantiate columns ─────────────────────────────────────────────────
-    const defs = this.buildColumnDefs();
-    defs.forEach((def, idx) => {
-      const col = new WheelColumn(
-        def,
-        this.opts.itemHeight,
-        this.opts.visibleRows,
-        this.opts.is3D,
-      );
-      this.columns.set(def.key, col);
-      this.columnsEl!.appendChild(col.el);
-
-      // Add colon separator between hour and minute columns
-      if (def.key === "hour" && idx + 1 < defs.length && defs[idx + 1].key === "minute") {
-        const separator = document.createElement("div");
-        separator.className = "mp-time-separator";
-        separator.textContent = ":";
-        this.columnsEl!.appendChild(separator);
-      }
-    });
-
-    // ── Assemble ────────────────────────────────────────────────────────────
     this.sheet.appendChild(this.columnsEl);
 
     if (this.opts.displayMode === "modal" && this.overlay) {
       this.overlay.appendChild(this.sheet);
-      container.appendChild(this.overlay);
+      this.containerEl.appendChild(this.overlay);
     } else {
-      container.appendChild(this.sheet);
+      this.containerEl.appendChild(this.sheet);
     }
 
-    // ── Keyboard: close on Escape ───────────────────────────────────────────
-    document.addEventListener("keydown", this.handleGlobalKeydown.bind(this));
+    document.addEventListener("keydown", this._onKeydown.bind(this));
   }
 
-  private applyCustomProperties(el: HTMLElement): void {
-    el.style.setProperty("--mp-primary", this.opts.primaryColor);
-    el.style.setProperty("--mp-item-height", `${this.opts.itemHeight}px`);
-    el.style.setProperty("--mp-visible-rows", String(this.opts.visibleRows));
-  }
+  private _onColumnSelect(key: ColumnDef["key"], _index: number): void {
+    const col = this.columns.get(key);
+    if (!col) return;
+    const value = col.getValue();
 
-  private getTitleByMode(): string {
-    switch (this.opts.mode) {
-      case "date": return "Select Date";
-      case "time": return "Select Time";
-      default: return "Select Date & Time";
+    if (key === "year") {
+      const maxDay = getDaysInMonth(value, this._value.getMonth());
+      this._value.setDate(Math.min(this._value.getDate(), maxDay));
+      this._value.setFullYear(value);
+      this._refreshDayColumn();
+    } else if (key === "month") {
+      const maxDay = getDaysInMonth(this._value.getFullYear(), value);
+      this._value.setDate(Math.min(this._value.getDate(), maxDay));
+      this._value.setMonth(value);
+      this._refreshDayColumn();
+    } else if (key === "day") {
+      this._value.setDate(value);
+    } else if (key === "hour") {
+      this._value.setHours(value);
+    } else if (key === "minute") {
+      this._value.setMinutes(value);
     }
+
+    this._emitChange();
   }
 
-  private handleGlobalKeydown(e: KeyboardEvent): void {
+  private _refreshDayColumn(): void {
+    const dayCol = this.columns.get("day");
+    if (!dayCol) return;
+    const newItems = buildDayItems(this._value.getFullYear(), this._value.getMonth());
+    const currentDay = clamp(this._value.getDate(), 1, newItems.length);
+    this._value.setDate(currentDay);
+    dayCol.updateItems(newItems, currentDay - 1);
+  }
+
+  private _emitChange(): void {
+    const date = cloneDate(this._value);
+    const formatted = this.opts.format ? formatDate(date, this.opts.format, this.opts.locale) : undefined;
+    this.opts.onChange?.(date, formatted);
+  }
+
+  private _emitConfirm(): void {
+    const date = cloneDate(this._value);
+    const formatted = this.opts.format ? formatDate(date, this.opts.format, this.opts.locale) : undefined;
+    this.opts.onConfirm?.(date, formatted);
+  }
+
+  private _onKeydown(e: KeyboardEvent): void {
     if (this.opts.displayMode === "inline") return;
-    
-    const isVisible = this.opts.displayMode === "modal" 
+    const isVisible = this.opts.displayMode === "modal"
       ? this.overlay?.classList.contains("mp-visible")
       : this.sheet?.classList.contains("mp-visible");
-
     if (!isVisible) return;
-
-    if (e.key === "Escape") {
-      this.opts.onCancel?.();
-      this.hide();
-    }
+    if (e.key === "Escape") { this.opts.onCancel?.(); this.hide(); }
   }
 
-  private handleOutsideClick(e: MouseEvent): void {
+  private _onOutsideClick(e: MouseEvent): void {
     const target = e.target as Node;
-    if (this.opts.displayMode === "popover" && this.sheet && this.anchorEl) {
-      if (this.sheet.contains(target) || this.anchorEl.contains(target)) return;
-      this.opts.onCancel?.();
-      this.hide();
-    }
+    if (this.sheet?.contains(target) || this.anchorEl?.contains(target)) return;
+    this.opts.onCancel?.();
+    this.hide();
   }
 
-  // ── Public API ──────────────────────────────────────────────────────────────
+  // ── Public API ─────────────────────────────────────────────────────────────
 
-  /**
-   * Display the picker (slide-up animation).
-   */
   show(): this {
     if (this.opts.displayMode === "modal" && this.overlay) {
       this.overlay.classList.add("mp-visible");
     } else if (this.opts.displayMode === "popover" && this.sheet && this.anchorEl) {
       this.sheet.style.display = "block";
       this._stopAutoUpdate = createAutoUpdater(
-        this.anchorEl,
-        this.sheet,
-        ({ top, left }) => {
-          this.sheet!.style.top = `${top}px`;
-          this.sheet!.style.left = `${left}px`;
-        },
+        this.anchorEl, this.sheet,
+        ({ top, left }) => { this.sheet!.style.top = `${top}px`; this.sheet!.style.left = `${left}px`; },
         "bottom-start" as PopoverPlacement,
       );
-      
-      // small delay to allow display: block to apply before animating opacity/transform
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => this.sheet!.classList.add("mp-visible"));
-      });
-
+      requestAnimationFrame(() => requestAnimationFrame(() => this.sheet!.classList.add("mp-visible")));
       if (!this._boundOutsideClick) {
-        this._boundOutsideClick = this.handleOutsideClick.bind(this);
+        this._boundOutsideClick = this._onOutsideClick.bind(this);
         setTimeout(() => document.addEventListener("click", this._boundOutsideClick!), 0);
       }
     }
-
-    // Shift focus into the sheet for accessibility
-    setTimeout(() => {
-      const firstCol = this.columnsEl?.querySelector<HTMLElement>(".mp-column");
-      firstCol?.focus();
-    }, 250); // after transition
+    setTimeout(() => this.columnsEl?.querySelector<HTMLElement>(".mp-column")?.focus(), 250);
     return this;
   }
 
-  /**
-   * Hide the picker (slide-down animation).
-   */
   hide(): this {
     if (this.opts.displayMode === "modal" && this.overlay) {
       this.overlay.classList.remove("mp-visible");
     } else if (this.opts.displayMode === "popover" && this.sheet) {
       this.sheet.classList.remove("mp-visible");
-      setTimeout(() => {
-        if (this.sheet && !this.sheet.classList.contains("mp-visible")) {
-          this.sheet.style.display = "none";
-        }
-      }, 400); // transition duration
-      
-      this._stopAutoUpdate?.();
-      this._stopAutoUpdate = null;
-
-      if (this._boundOutsideClick) {
-        document.removeEventListener("click", this._boundOutsideClick);
-        this._boundOutsideClick = null;
-      }
+      setTimeout(() => { if (!this.sheet?.classList.contains("mp-visible")) this.sheet!.style.display = "none"; }, 400);
+      this._stopAutoUpdate?.(); this._stopAutoUpdate = null;
+      if (this._boundOutsideClick) { document.removeEventListener("click", this._boundOutsideClick); this._boundOutsideClick = null; }
     }
     return this;
   }
 
-  /**
-   * Toggle visibility.
-   */
   toggle(): this {
-    const isVisible = this.opts.displayMode === "modal" 
+    const isVisible = this.opts.displayMode === "modal"
       ? this.overlay?.classList.contains("mp-visible")
       : this.sheet?.classList.contains("mp-visible");
-
-    if (isVisible) {
-      this.hide();
-    } else {
-      this.show();
-    }
-    return this;
+    return isVisible ? this.hide() : this.show();
   }
 
-  /**
-   * Programmatically set a new date value, syncing all wheel columns.
-   */
   setValue(date: Date): this {
     this._value = cloneDate(date);
-
     const v = this._value;
-    const { mode, minuteStep, itemHeight, visibleRows } = this.opts;
-
+    const { mode, minuteStep } = this.opts;
     if (mode === "date" || mode === "datetime") {
-      // Year
-      const yearCol = this.columns.get("year");
-      if (yearCol) {
-        const yearItems = this.buildYearItems();
-        const idx = yearItems.findIndex((i) => i.value === v.getFullYear());
-        yearCol.scrollToIndex(clamp(idx, 0, yearItems.length - 1), false);
-      }
-
-      // Month
-      const monthCol = this.columns.get("month");
-      monthCol?.scrollToIndex(v.getMonth(), false);
-
-      // Day
-      const dayCol = this.columns.get("day");
-      if (dayCol) {
-        const dayItems = this.buildDayItems(v.getFullYear(), v.getMonth());
-        dayCol.updateItems(dayItems, Math.min(v.getDate() - 1, dayItems.length - 1));
-      }
+      const yearItems = buildYearItems(this.opts);
+      const yi = yearItems.findIndex((i) => i.value === v.getFullYear());
+      this.columns.get("year")?.scrollToIndex(clamp(yi, 0, yearItems.length - 1), false);
+      this.columns.get("month")?.scrollToIndex(v.getMonth(), false);
+      const dayItems = buildDayItems(v.getFullYear(), v.getMonth());
+      this.columns.get("day")?.updateItems(dayItems, Math.min(v.getDate() - 1, dayItems.length - 1));
     }
-
     if (mode === "time" || mode === "datetime") {
       this.columns.get("hour")?.scrollToIndex(v.getHours(), false);
-
-      const step = minuteStep;
-      const snappedMin = Math.round(v.getMinutes() / step) * step;
-      const minuteItems = this.buildMinuteItems();
-      const minuteIdx = minuteItems.findIndex((i) => i.value === snappedMin);
-      this.columns
-        .get("minute")
-        ?.scrollToIndex(clamp(minuteIdx, 0, minuteItems.length - 1), false);
+      const minuteItems = buildMinuteItems(this.opts);
+      const snapped = Math.round(v.getMinutes() / minuteStep) * minuteStep;
+      const mi = minuteItems.findIndex((i) => i.value === snapped);
+      this.columns.get("minute")?.scrollToIndex(clamp(mi, 0, minuteItems.length - 1), false);
     }
-
-    void itemHeight; void visibleRows; // reserved
     return this;
   }
 
-  /**
-   * Returns a clone of the currently selected Date.
-   */
-  getValue(): Date {
-    return cloneDate(this._value);
-  }
+  getValue(): Date { return cloneDate(this._value); }
 
-  /**
-   * Returns the formatted string if `format` was specified, otherwise null.
-   */
   getFormattedValue(): string | null {
-    if (!this.opts.format) return null;
-    return formatDate(this._value, this.opts.format, this.opts.locale);
+    return this.opts.format ? formatDate(this._value, this.opts.format, this.opts.locale) : null;
   }
 
-  /**
-   * Update specific options after construction (e.g. switch theme).
-   */
   setOptions(partial: Partial<PickerOptions>): this {
     if (partial.theme) {
       this.opts.theme = partial.theme;
@@ -628,9 +248,9 @@ export class MomentumPicker {
       if (this.overlay) this.overlay.dataset.mpStyle = partial.style;
       if (this.sheet) this.sheet.dataset.mpStyle = partial.style;
     }
-    if (partial.primaryColor) {
+    if (partial.primaryColor && this.sheet) {
       this.opts.primaryColor = partial.primaryColor;
-      if (this.sheet) this.applyCustomProperties(this.sheet);
+      this.sheet.style.setProperty("--mp-primary", partial.primaryColor);
     }
     if (partial.is3D !== undefined) {
       this.opts.is3D = partial.is3D;
@@ -639,11 +259,7 @@ export class MomentumPicker {
     return this;
   }
 
-  /**
-   * Remove the picker from the DOM and clean up all listeners.
-   */
   destroy(): void {
-    document.removeEventListener("keydown", this.handleGlobalKeydown.bind(this));
     this.columns.forEach((col) => col.destroy());
     this.columns.clear();
     this.overlay?.remove();

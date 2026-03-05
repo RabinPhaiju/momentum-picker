@@ -1,0 +1,135 @@
+/* calendar/layout.css — Panel, overlay, and structural layout */
+
+/* ── CSS Custom Properties (calendar-specific) ────────────────────────────── */
+.dp-panel {
+  --dp-radius: 12px;
+  --dp-radius-sm: 8px;
+  --dp-transition-fast: 120ms;
+  position: relative;
+}
+
+/* Light theme */
+[data-dp-theme="light"] .dp-panel,
+.dp-panel {
+  --dp-bg: #ffffff;
+  --dp-surface: #f5f5f7;
+  --dp-border: rgba(0, 0, 0, 0.1);
+  --dp-text: #1d1d1f;
+  --dp-text-muted: #6e6e73;
+  --dp-primary: #007aff;
+  --dp-primary-soft: rgba(0, 122, 255, 0.12);
+  --dp-selected-text: #ffffff;
+  --dp-in-range: rgba(0, 122, 255, 0.1);
+  --dp-font: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Dark theme */
+[data-dp-theme="dark"] .dp-panel {
+  --dp-bg: #1c1c1e;
+  --dp-surface: #2c2c2e;
+  --dp-border: rgba(255, 255, 255, 0.12);
+  --dp-text: #f5f5f7;
+  --dp-text-muted: #98989d;
+  --dp-primary: #0a84ff;
+  --dp-primary-soft: rgba(10, 132, 255, 0.2);
+  --dp-selected-text: #ffffff;
+  --dp-in-range: rgba(10, 132, 255, 0.15);
+}
+
+/* ── Panel frame ──────────────────────────────────────────────────────────── */
+.dp-panel {
+  background: var(--dp-bg);
+  border-radius: var(--dp-radius);
+  border: 1px solid var(--dp-border);
+  font-family: var(--dp-font);
+  color: var(--dp-text);
+  width: 280px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+/* ── Modal overlay ────────────────────────────────────────────────────────── */
+.dp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms ease, visibility 200ms ease;
+  z-index: 9999;
+}
+
+.dp-overlay.dp-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.dp-overlay .dp-panel {
+  transform: translateY(20px) scale(0.97);
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 200ms ease;
+  opacity: 0;
+}
+
+.dp-overlay.dp-open .dp-panel {
+  transform: none;
+  opacity: 1;
+}
+
+/* ── Popover (floating) ───────────────────────────────────────────────────── */
+.dp-panel--popover {
+  position: fixed;
+  z-index: 9998;
+  transition: opacity 150ms ease;
+}
+
+/* ── Inline ───────────────────────────────────────────────────────────────── */
+.dp-inline .dp-panel {
+  box-shadow: none;
+  border-radius: 0;
+  border: none;
+  width: 100%;
+}
+
+/* ── Input wrapper ────────────────────────────────────────────────────────── */
+.dp-input-wrapper { position: relative; display: inline-block; }
+
+.dp-input {
+  font-family: var(--dp-font);
+  font-size: 14px;
+  padding: 8px 36px 8px 12px;
+  border: 1.5px solid var(--dp-border);
+  border-radius: var(--dp-radius);
+  background: var(--dp-bg);
+  color: var(--dp-text);
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color var(--dp-transition-fast), box-shadow var(--dp-transition-fast);
+}
+
+.dp-input:focus {
+  border-color: var(--dp-primary);
+  box-shadow: 0 0 0 3px var(--dp-primary-soft);
+}
+
+.dp-input-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--dp-text-muted);
+  font-size: 16px;
+}
+
+/* ── Validation error ─────────────────────────────────────────────────────── */
+.dp-error { font-size: 12px; color: #ff3b30; padding: 4px 12px 8px; }
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 360px) { .dp-panel { width: 100%; border-radius: 0; } }

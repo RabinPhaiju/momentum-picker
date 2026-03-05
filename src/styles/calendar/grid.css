@@ -1,0 +1,187 @@
+/* calendar/grid.css — Header, weekdays, day grid, and day cells */
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.dp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 8px 8px;
+  gap: 4px;
+}
+
+.dp-header-nav {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--dp-radius-sm);
+  background: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: var(--dp-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--dp-transition-fast);
+  flex-shrink: 0;
+}
+.dp-header-nav:hover { background: var(--dp-surface); }
+
+.dp-header-title {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+}
+
+.dp-header-month,
+.dp-header-year {
+  font-size: 15px;
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--dp-text);
+  padding: 4px 6px;
+  border-radius: var(--dp-radius-sm);
+  transition: background var(--dp-transition-fast);
+}
+.dp-header-month:hover,
+.dp-header-year:hover { background: var(--dp-surface); }
+
+/* ── Weekday Label Row ───────────────────────────────────────────────────── */
+.dp-weekdays {
+  display: grid;
+  padding: 0 8px 4px;
+  gap: 0;
+}
+.dp-weekdays--7 { grid-template-columns: repeat(7, 1fr); }
+.dp-weekdays--8 { grid-template-columns: 24px repeat(7, 1fr); }
+
+.dp-weekday-label {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--dp-text-muted);
+  padding: 2px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.dp-weekday-label--weekend { color: var(--dp-primary); opacity: 0.7; }
+.dp-week-num-header { color: var(--dp-text-muted); font-size: 10px; font-weight: 500; text-align: center; }
+
+/* ── Calendar Grid ───────────────────────────────────────────────────────── */
+.dp-grid { padding: 0 8px 8px; display: flex; flex-direction: column; gap: 2px; }
+
+.dp-week-row {
+  display: grid;
+  gap: 2px;
+  border-radius: var(--dp-radius-sm);
+  overflow: hidden;
+}
+.dp-week-row--7 { grid-template-columns: repeat(7, 1fr); }
+.dp-week-row--8 { grid-template-columns: 24px repeat(7, 1fr); }
+.dp-week-row--selected { background: var(--dp-in-range); }
+
+.dp-week-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--dp-text-muted);
+  opacity: 0.7;
+}
+
+/* ── Day Cell ────────────────────────────────────────────────────────────── */
+.dp-day {
+  aspect-ratio: 1;
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--dp-radius-sm);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--dp-text);
+  font-family: var(--dp-font);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--dp-transition-fast), color var(--dp-transition-fast);
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+
+.dp-day:hover:not(.dp-day--disabled):not(.dp-day--outside) {
+  background: var(--dp-surface);
+}
+
+.dp-day:focus-visible {
+  outline: 2px solid var(--dp-primary);
+  outline-offset: -2px;
+}
+
+/* Today indicator */
+.dp-day--today::after {
+  content: "";
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--dp-primary);
+}
+.dp-day--today.dp-day--selected::after { background: white; }
+
+/* Selected */
+.dp-day--selected {
+  background: var(--dp-primary) !important;
+  color: var(--dp-selected-text) !important;
+  font-weight: 600;
+}
+
+/* Range */
+.dp-day--in-range {
+  background: var(--dp-in-range);
+  border-radius: 0;
+}
+.dp-day--range-start {
+  border-radius: var(--dp-radius-sm) 0 0 var(--dp-radius-sm);
+}
+.dp-day--range-end {
+  border-radius: 0 var(--dp-radius-sm) var(--dp-radius-sm) 0;
+}
+.dp-day--range-start.dp-day--range-end { border-radius: var(--dp-radius-sm); }
+
+/* States */
+.dp-day--outside { color: var(--dp-text-muted); opacity: 0.4; }
+.dp-day--disabled { opacity: 0.25; cursor: not-allowed; pointer-events: none; }
+.dp-day--weekend { color: var(--dp-primary); }
+.dp-day--multi-selected { background: var(--dp-primary); color: var(--dp-selected-text); font-weight: 600; }
+
+/* ── Month / Year Panel Grid ───────────────────────────────────────────────── */
+.dp-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  padding: 8px;
+  min-height: 180px;
+}
+
+.dp-panel-item {
+  padding: 10px 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--dp-radius-sm);
+  font-size: 13px;
+  color: var(--dp-text);
+  font-family: var(--dp-font);
+  transition: background var(--dp-transition-fast), color var(--dp-transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+.dp-panel-item:hover { background: var(--dp-surface); }
+.dp-panel-item--selected { background: var(--dp-primary) !important; color: white !important; font-weight: 600; }
+.dp-panel-item--today { color: var(--dp-primary); font-weight: 600; }
+.dp-panel-item--disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
