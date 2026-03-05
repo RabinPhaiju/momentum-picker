@@ -19,7 +19,7 @@
 - 🌙 **Light / Dark** theme out of the box
 - 🎨 **16+ Premium Styles** — Material, Brutalist, Brutalist, Retro, Neumorphism, etc.
 - ♿ **Accessible** — ARIA roles, keyboard navigation, focus management
-- 🔌 **Framework-agnostic** — React + Vue wrappers included
+- 🎯 **Vanilla TypeScript** — Zero dependencies, framework-agnostic
 
 ---
 
@@ -60,31 +60,6 @@ const calendar = new DatePicker({
   showTimePicker: true,
   onChange: (val) => console.log('Selection:', val),
 });
-```
-
-### React
-
-```tsx
-import { useState } from 'react';
-import MomentumPickerReact from 'momentum-picker/react'; // Community wrapper
-
-function App() {
-  const [open, setOpen] = useState(false);
-  const [date, setDate] = useState(new Date());
-
-  return (
-    <>
-      <button onClick={() => setOpen(true)}>Open Picker</button>
-      <MomentumPickerReact
-        isOpen={open}
-        mode="datetime"
-        value={date}
-        onConfirm={(d) => { setDate(d); setOpen(false); }}
-        onCancel={() => setOpen(false)}
-      />
-    </>
-  );
-}
 ```
 
 ### Vue 3
@@ -221,7 +196,6 @@ momentum-picker/
 │   └── index.ts          # Public entry point
 ├── example/
 │   ├── index.html        # Plain HTML demo (all modes + theme toggle)
-│   ├── react-wrapper.tsx # React wrapper component
 │   └── vue-wrapper.vue   # Vue 3 wrapper component
 ├── dist/                 # Built output (generated)
 ├── README.md
