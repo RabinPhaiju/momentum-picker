@@ -493,12 +493,17 @@
   border: 1px solid var(--mp-border);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   display: none;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .mp-popover.mp-visible {
   transform: translateY(0) scale(1);
   opacity: 1;
   visibility: visible;
+  display: block;
 }
 
 /* ── Responsive tweaks ────────────────────────────────────────────────────── */

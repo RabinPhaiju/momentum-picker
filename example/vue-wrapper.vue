@@ -7,8 +7,11 @@
   Usage:
     <MomentumPickerVue
       :is-open="showPicker"
+      display-mode="modal"
       mode="datetime"
       :value="selectedDate"
+      theme="dark"
+      style="material"
       @confirm="onConfirm"
       @cancel="onCancel"
       @change="onChange"
@@ -30,6 +33,7 @@ import type { PickerOptions, PickerMode, PickerTheme } from "../src/types";
 interface Props {
   isOpen?: boolean;
   mode?: PickerMode;
+  displayMode?: "modal" | "popover" | "inline";
   value?: Date;
   minDate?: Date;
   maxDate?: Date;
@@ -37,19 +41,24 @@ interface Props {
   format?: string;
   locale?: string;
   theme?: PickerTheme;
+  style?: string;
   primaryColor?: string;
   itemHeight?: number;
   visibleRows?: number;
+  is3D?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   isOpen: false,
   mode: "datetime",
+  displayMode: "modal",
   visibleRows: 5,
   itemHeight: 44,
   theme: "light",
+  style: "default",
   primaryColor: "#007aff",
   minuteStep: 1,
+  is3D: true,
 });
 
 // ── Emits ──────────────────────────────────────────────────────────────────
@@ -76,6 +85,7 @@ onMounted(() => {
   const options: PickerOptions = {
     container: containerRef.value,
     mode: props.mode,
+    displayMode: props.displayMode as any,
     value: props.value ?? new Date(),
     minDate: props.minDate,
     maxDate: props.maxDate,
@@ -83,9 +93,11 @@ onMounted(() => {
     format: props.format,
     locale: props.locale,
     theme: props.theme,
+    style: props.style,
     primaryColor: props.primaryColor,
     itemHeight: props.itemHeight,
     visibleRows: props.visibleRows,
+    is3D: props.is3D,
     onChange: (date, formatted) => emit("change", date, formatted),
     onConfirm: (date, formatted) => emit("confirm", date, formatted),
     onCancel: () => emit("cancel"),
@@ -124,44 +136,53 @@ watch(
 );
 
 watch(
-  () => [props.theme, props.primaryColor] as const,
-  ([theme, primaryColor]) => {
-    picker?.setOptions({ theme, primaryColor });
+  () => [props.theme, props.style, props.primaryColor, props.is3D] as const,
+  ([theme, style, primaryColor, is3D]) => {
+    picker?.setOptions({ theme, style, primaryColor, is3D });
+  },
+);
+
+watch(
+  () => props.displayMode,
+  () => {
+    // Note: displayMode cannot be changed after init, would need to recreate
+    console.warn("displayMode cannot be changed after initialization");
   },
 );
 </script>
 
 <!--
-  Example parent usage:
-  ─────────────────────────────────────────────────────────
+  Example parent component usage:
+  ────────────────────────────────
 
+  See vue example in index.html for a complete working example.
+  
+  Basic usage:
   <template>
-    <div>
-      <p>Selected: {{ selectedDate.toLocaleString() }}</p>
-      <button @click="showPicker = true">Open Picker</button>
-
-      <MomentumPickerVue
-        :is-open="showPicker"
-        mode="datetime"
-        :value="selectedDate"
-        format="YYYY-MM-DD HH:mm"
-        @confirm="onConfirm"
-        @cancel="showPicker = false"
-      />
-    </div>
+    <MomentumPickerVue
+      :is-open="showPicker"
+      display-mode="modal"
+      mode="datetime"
+      :value="selectedDate"
+      :theme="theme"
+      :style="pickerStyle"
+      :is3D="is3D"
+      @confirm="onConfirm"
+      @cancel="showPicker = false"
+    />
   </template>
-
-  <script setup lang="ts">
-  import { ref } from 'vue';
-  import MomentumPickerVue from './vue-wrapper.vue';
-
-  const showPicker = ref(false);
-  const selectedDate = ref(new Date());
-
-  const onConfirm = (date: Date, formatted?: string) => {
-    selectedDate.value = date;
-    showPicker.value = false;
-    console.log('Confirmed:', formatted ?? date);
-  };
-  <\/script>
+  
+  Features:
+  - Control visibility with :is-open
+  - Switch display modes: 'modal', 'popover', 'inline'
+  - Change themes: 'light', 'dark'
+  - Apply 16+ visual styles
+  - Toggle 3D effect
+  - Customize time step with :minute-step
+  - Set min/max dates
+  - Custom primary color
 -->
+
+<style scoped>
+/* No styles needed - picker is vanilla */
+</style>

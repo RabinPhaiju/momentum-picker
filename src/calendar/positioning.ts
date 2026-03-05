@@ -30,6 +30,7 @@ const MARGIN = 8; // px gap between anchor and popover
  *  1. Try preferred placement (bottom-start by default).
  *  2. If it overflows the viewport, try the opposite side.
  *  3. Apply edge clamping so the popover never bleeds off screen.
+ *  4. On very small screens (mobile), center the popover.
  */
 export function computePosition(
   anchor: HTMLElement,
@@ -41,6 +42,20 @@ export function computePosition(
   const fHeight = floating.offsetHeight;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
+
+  // ── Mobile detection: if screen is very small, center the popover ─────────
+  const isMobileSmallScreen = vw < 400;
+
+  if (isMobileSmallScreen) {
+    // Center on small mobile screens
+    const top = Math.max(8, (vh - fHeight) / 2);
+    const left = Math.max(8, (vw - fWidth) / 2);
+    return { 
+      top: Math.min(top, vh - fHeight - 8), 
+      left: Math.min(left, vw - fWidth - 8), 
+      placement: "bottom" 
+    };
+  }
 
   // ── Candidate positions ────────────────────────────────────────────────────
 
