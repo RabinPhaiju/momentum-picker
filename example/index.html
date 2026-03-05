@@ -3,19 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>momentum-picker — iOS Wheel DateTime Picker Demo</title>
+    <title>momentum-picker v0.2 — DatePicker + Wheel Demo</title>
     <meta
       name="description"
-      content="Demo of momentum-picker: a smooth, iOS-style wheel datetime picker for the web."
+      content="Full-featured DatePicker and iOS Wheel picker demo for momentum-picker."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..700;1,14..32,400&display=swap"
       rel="stylesheet"
     />
     <style>
-      /* ── Demo page styles ─────────────────────────────────── */
       *,
       *::before,
       *::after {
@@ -25,153 +24,141 @@
       }
 
       :root {
-        --page-bg: #f2f2f7;
-        --card-bg: #ffffff;
+        --bg: #f2f2f7;
+        --card: #ffffff;
         --text: #1c1c1e;
-        --text-secondary: #8e8e93;
+        --text2: #8e8e93;
         --accent: #007aff;
         --border: rgba(60, 60, 67, 0.12);
         --radius: 16px;
-        --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+        --font: "Inter", system-ui, sans-serif;
       }
 
       body.dark {
-        --page-bg: #000000;
-        --card-bg: #1c1c1e;
+        --bg: #000000;
+        --card: #1c1c1e;
         --text: #ffffff;
-        --text-secondary: #636366;
+        --text2: #636366;
         --border: rgba(255, 255, 255, 0.08);
       }
 
       body {
         font-family: var(--font);
-        background: var(--page-bg);
+        background: var(--bg);
         color: var(--text);
         min-height: 100vh;
-        padding: 24px 16px 80px;
         transition:
           background 0.3s,
           color 0.3s;
       }
 
-      .header {
-        max-width: 600px;
-        margin: 0 auto 40px;
-        text-align: center;
+      /* ── Layout ── */
+      .page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 16px 80px;
       }
 
+      .hero {
+        text-align: center;
+        padding: 48px 0 40px;
+      }
       .badge {
         display: inline-block;
         background: linear-gradient(135deg, #007aff, #5e5ce6);
-        color: white;
-        font-size: 12px;
-        font-weight: 600;
-        padding: 4px 12px;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 14px;
         border-radius: 20px;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
         margin-bottom: 16px;
       }
-
       h1 {
-        font-size: 36px;
-        font-weight: 700;
-        letter-spacing: -0.5px;
+        font-size: clamp(28px, 5vw, 44px);
+        font-weight: 800;
+        letter-spacing: -1px;
         margin-bottom: 10px;
-        background: linear-gradient(135deg, var(--text), var(--text-secondary));
+        background: linear-gradient(135deg, var(--text), var(--text2));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
       }
-
-      .subtitle {
-        color: var(--text-secondary);
+      .hero p {
+        color: var(--text2);
         font-size: 16px;
-        line-height: 1.5;
+        line-height: 1.6;
       }
 
-      .controls {
-        position: fixed;
-        top: 16px;
-        right: 16px;
-        display: flex;
-        gap: 8px;
-        z-index: 9999;
+      /* ── Section ── */
+      .section {
+        margin-bottom: 48px;
+      }
+      .section-title {
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text2);
+        margin-bottom: 16px;
+        padding-left: 4px;
       }
 
-      .icon-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: var(--card-bg);
-        border: 1px solid var(--border);
-        cursor: pointer;
-        font-size: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.15s;
-      }
-
-      .icon-btn:hover {
-        transform: scale(1.1);
-      }
-
-      /* ── Card Grid ─────────────────────────────────────────── */
+      /* ── Grid ── */
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 20px;
-        max-width: 900px;
-        margin: 0 auto;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+      }
+      .grid--2 {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       }
 
+      /* ── Card ── */
       .card {
-        background: var(--card-bg);
+        background: var(--card);
         border-radius: var(--radius);
         border: 1px solid var(--border);
         padding: 24px;
-        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
         transition:
           transform 0.15s,
           box-shadow 0.15s;
       }
-
       .card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      }
-
-      .card-icon {
-        font-size: 32px;
-        margin-bottom: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
       }
 
       .card-title {
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 6px;
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
-
       .card-desc {
-        color: var(--text-secondary);
-        font-size: 14px;
+        font-size: 13px;
+        color: var(--text2);
+        margin-bottom: 16px;
         line-height: 1.5;
-        margin-bottom: 20px;
       }
 
+      /* ── Buttons ── */
       .btn {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         background: var(--accent);
-        color: white;
+        color: #fff;
         font-family: var(--font);
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 600;
         border: none;
-        padding: 12px 24px;
-        border-radius: 12px;
+        padding: 10px 20px;
+        border-radius: 10px;
         cursor: pointer;
         width: 100%;
         justify-content: center;
@@ -180,52 +167,105 @@
           transform 0.15s;
         -webkit-tap-highlight-color: transparent;
       }
-
       .btn:hover {
         opacity: 0.85;
       }
-
       .btn:active {
-        transform: scale(0.98);
-        opacity: 0.75;
+        transform: scale(0.97);
+        opacity: 0.7;
       }
-
-      .btn.btn-outline {
+      .btn.outline {
         background: transparent;
         border: 1.5px solid var(--accent);
         color: var(--accent);
       }
 
-      .result-box {
-        margin-top: 16px;
-        background: var(--page-bg);
+      /* ── Result box ── */
+      .result {
+        margin-top: 12px;
+        background: var(--bg);
         border-radius: 10px;
-        padding: 12px 16px;
-        font-size: 14px;
-        color: var(--text-secondary);
-        min-height: 42px;
-        font-family: "SF Mono", "Fira Code", monospace;
+        padding: 10px 14px;
+        font-size: 13px;
+        color: var(--text2);
+        min-height: 38px;
         border: 1px solid var(--border);
+        font-family: "SF Mono", "Fira Code", monospace;
         transition: background 0.3s;
         word-break: break-all;
       }
-
-      .result-box span {
+      .result em {
         color: var(--accent);
+        font-style: normal;
         font-weight: 600;
       }
 
-      /* ── Custom colour demo ──────────────────────────────────── */
-      .color-swatches {
+      /* ── Controls ── */
+      .controls {
+        position: fixed;
+        top: 16px;
+        right: 16px;
         display: flex;
         gap: 8px;
-        margin-bottom: 16px;
-        flex-wrap: wrap;
+        z-index: 9999;
+      }
+      .icon-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--card);
+        border: 1px solid var(--border);
+        cursor: pointer;
+        font-size: 17px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.15s;
+      }
+      .icon-btn:hover {
+        transform: scale(1.1);
       }
 
+      /* ── Inline calendar container ── */
+      .inline-wrap {
+        margin-top: 0;
+      }
+
+      /* ── Input styled trigger ── */
+      .dp-input-wrapper {
+        width: 100%;
+      }
+      .dp-input {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1.5px solid var(--border);
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 14px;
+        cursor: pointer;
+        outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .dp-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+      }
+
+      /* ── Colour swatches ── */
+      .swatches {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
       .swatch {
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
         cursor: pointer;
         border: 3px solid transparent;
@@ -233,29 +273,42 @@
           transform 0.15s,
           border-color 0.15s;
       }
-
       .swatch.active {
         border-color: var(--text);
         transform: scale(1.2);
       }
 
-      /* ── Footer ─────────────────────────────────────────────── */
+      /* ── Chips (for multi-select display) ── */
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 8px;
+      }
+      .chip {
+        font-size: 11px;
+        font-family: monospace;
+        background: color-mix(in srgb, var(--accent) 12%, transparent);
+        color: var(--accent);
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-weight: 600;
+      }
+
       footer {
         text-align: center;
         margin-top: 60px;
-        color: var(--text-secondary);
-        font-size: 14px;
+        color: var(--text2);
+        font-size: 13px;
       }
-
       footer a {
         color: var(--accent);
         text-decoration: none;
-        font-weight: 500;
+        font-weight: 600;
       }
     </style>
   </head>
-  <body id="page-body">
-    <!-- Controls: theme toggle -->
+  <body id="body">
     <div class="controls">
       <button
         class="icon-btn"
@@ -267,267 +320,619 @@
       </button>
     </div>
 
-    <!-- Hero Header -->
-    <header class="header">
-      <div class="badge">momentum-picker v0.1.0</div>
-      <h1>iOS Wheel DateTime Picker</h1>
-      <p class="subtitle">
-        Smooth momentum scrolling · Infinite wheel · Touch &amp; mouse · Fully
-        accessible · Zero dependencies
-      </p>
-    </header>
+    <div class="page">
+      <!-- Hero -->
+      <header class="hero">
+        <div class="badge">momentum-picker v0.2</div>
+        <h1>DatePicker + iOS Wheel</h1>
+        <p>
+          Single · Range · Multi · Week · Month · Year · Inline · Popover ·
+          Modal<br />
+          Keyboard navigation · ARIA · Dark mode · Custom themes · Zero
+          dependencies
+        </p>
+      </header>
 
-    <!-- Demo Cards -->
-    <main class="grid" id="app">
-      <!-- Date Mode -->
-      <div class="card">
-        <div class="card-icon">📅</div>
-        <div class="card-title">Date Picker</div>
-        <div class="card-desc">
-          Year · Month · Day columns. Locale-aware month names.
-        </div>
-        <button class="btn" id="open-date" aria-label="Open Date Picker">
-          📅 Pick a Date
-        </button>
-        <div class="result-box" id="result-date">Waiting for selection…</div>
-      </div>
+      <!-- ── Section 1: Calendar DatePicker (Inline) ── -->
+      <section class="section">
+        <div class="section-title">📅 Inline Calendar Picker</div>
+        <div class="grid">
+          <!-- Single -->
+          <div class="card">
+            <div class="card-title">🗓️ Single Date</div>
+            <div class="card-desc">
+              Click any day. Min date = today. Shows Today + Clear buttons.
+            </div>
+            <div class="inline-wrap" id="dp-single"></div>
+            <div class="result" id="r-single">Select a date…</div>
+          </div>
 
-      <!-- Time Mode -->
-      <div class="card">
-        <div class="card-icon">⏰</div>
-        <div class="card-title">Time Picker</div>
-        <div class="card-desc">
-          Hour · Minute columns with configurable step (5 min here).
-        </div>
-        <button class="btn" id="open-time" aria-label="Open Time Picker">
-          ⏰ Pick a Time
-        </button>
-        <div class="result-box" id="result-time">Waiting for selection…</div>
-      </div>
+          <!-- Range -->
+          <div class="card">
+            <div class="card-title">📏 Date Range</div>
+            <div class="card-desc">
+              Click start then end — or drag across days. Weekends disabled.
+            </div>
+            <div class="inline-wrap" id="dp-range"></div>
+            <div class="result" id="r-range">Select a range…</div>
+          </div>
 
-      <!-- DateTime Mode -->
-      <div class="card">
-        <div class="card-icon">📆</div>
-        <div class="card-title">DateTime Picker</div>
-        <div class="card-desc">
-          All five columns. Formatted output with YYYY-MM-DD HH:mm.
+          <!-- Multiple -->
+          <div class="card">
+            <div class="card-title">🔢 Multiple Dates</div>
+            <div class="card-desc">
+              Click to toggle individual dates. Max date = 3 months from now.
+            </div>
+            <div class="inline-wrap" id="dp-multi"></div>
+            <div id="r-multi" class="result">
+              <div class="chips" id="chips-multi"></div>
+            </div>
+          </div>
         </div>
-        <button
-          class="btn"
-          id="open-datetime"
-          aria-label="Open DateTime Picker"
-        >
-          📆 Pick Date &amp; Time
-        </button>
-        <div class="result-box" id="result-datetime">
-          Waiting for selection…
-        </div>
-      </div>
+      </section>
 
-      <!-- Custom Theme / Color -->
-      <div class="card">
-        <div class="card-icon">🎨</div>
-        <div class="card-title">Custom Accent Color</div>
-        <div class="card-desc">Pick a color then open the picker.</div>
-        <div class="color-swatches" id="swatches">
-          <div
-            class="swatch active"
-            data-color="#007aff"
-            style="background: #007aff"
-            title="iOS Blue"
-          ></div>
-          <div
-            class="swatch"
-            data-color="#34c759"
-            style="background: #34c759"
-            title="iOS Green"
-          ></div>
-          <div
-            class="swatch"
-            data-color="#ff9500"
-            style="background: #ff9500"
-            title="iOS Orange"
-          ></div>
-          <div
-            class="swatch"
-            data-color="#ff3b30"
-            style="background: #ff3b30"
-            title="iOS Red"
-          ></div>
-          <div
-            class="swatch"
-            data-color="#af52de"
-            style="background: #af52de"
-            title="iOS Purple"
-          ></div>
-          <div
-            class="swatch"
-            data-color="#ff2d55"
-            style="background: #ff2d55"
-            title="iOS Pink"
-          ></div>
+      <!-- ── Section 2: Picker Mode (Week / Month / Year) ── -->
+      <section class="section">
+        <div class="section-title">🗓️ Granularity Modes</div>
+        <div class="grid grid--2">
+          <!-- Week -->
+          <div class="card">
+            <div class="card-title">📆 Week Picker</div>
+            <div class="card-desc">Select an entire week at once.</div>
+            <div class="inline-wrap" id="dp-week"></div>
+            <div class="result" id="r-week">Select a week…</div>
+          </div>
+
+          <!-- Month -->
+          <div class="card">
+            <div class="card-title">🗓️ Month Picker</div>
+            <div class="card-desc">
+              Select a month — jumps to month view immediately.
+            </div>
+            <div class="inline-wrap" id="dp-month"></div>
+            <div class="result" id="r-month">Select a month…</div>
+          </div>
+
+          <!-- Year -->
+          <div class="card">
+            <div class="card-title">🗓️ Year Picker</div>
+            <div class="card-desc">Select a year — jumps to year panel.</div>
+            <div class="inline-wrap" id="dp-year"></div>
+            <div class="result" id="r-year">Select a year…</div>
+          </div>
         </div>
-        <button
-          class="btn btn-outline"
-          id="open-custom"
-          aria-label="Open Picker with Custom Color"
-        >
-          🎨 Open with Custom Color
-        </button>
-        <div class="result-box" id="result-custom">Waiting for selection…</div>
-      </div>
-    </main>
+      </section>
+
+      <!-- ── Section 3: Popover Mode ── -->
+      <section class="section">
+        <div class="section-title">💬 Popover Mode (Auto-flip)</div>
+        <div class="grid grid--2">
+          <div class="card">
+            <div class="card-title">📅 Date Popover</div>
+            <div class="card-desc">
+              Click the input to open. Smart positioning — flips if near edge.
+            </div>
+            <input
+              class="dp-input"
+              id="input-single"
+              placeholder="Pick a date…"
+              readonly
+              aria-label="Date picker input"
+            />
+            <div class="result" id="r-popover-single">Click input above…</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">📏 Range Popover</div>
+            <div class="card-desc">
+              Confirm/Cancel buttons visible. Locale: fr-FR.
+            </div>
+            <input
+              class="dp-input"
+              id="input-range"
+              placeholder="Pick a range…"
+              readonly
+              aria-label="Date range picker input"
+            />
+            <div class="result" id="r-popover-range">Click input above…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 4: Modal Mode ── -->
+      <section class="section">
+        <div class="section-title">🪟 Modal Mode</div>
+        <div class="grid grid--2">
+          <div class="card">
+            <div class="card-title">📅 Single + Confirm</div>
+            <div class="card-desc">
+              Opens as centred overlay. Press Escape or Cancel to dismiss.
+            </div>
+            <button class="btn" id="open-modal-single">
+              📅 Open Date Modal
+            </button>
+            <div class="result" id="r-modal-single">Waiting…</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🔢 Multi-select Modal</div>
+            <div class="card-desc">Select multiple non-contiguous dates.</div>
+            <button class="btn" id="open-modal-multi">
+              🔢 Open Multi Modal
+            </button>
+            <div class="result" id="r-modal-multi">Waiting…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 5: Custom & Theming ── -->
+      <section class="section">
+        <div class="section-title">🎨 Custom Themes & Renderers</div>
+        <div class="grid grid--2">
+          <div class="card">
+            <div class="card-title">🎨 Custom Accent Color</div>
+            <div class="card-desc">
+              Pick a swatch then the calendar updates instantly.
+            </div>
+            <div class="swatches" id="swatches">
+              <div
+                class="swatch active"
+                data-color="#007aff"
+                style="background: #007aff"
+                title="iOS Blue"
+              ></div>
+              <div
+                class="swatch"
+                data-color="#34c759"
+                style="background: #34c759"
+                title="iOS Green"
+              ></div>
+              <div
+                class="swatch"
+                data-color="#ff9500"
+                style="background: #ff9500"
+                title="iOS Orange"
+              ></div>
+              <div
+                class="swatch"
+                data-color="#ff3b30"
+                style="background: #ff3b30"
+                title="iOS Red"
+              ></div>
+              <div
+                class="swatch"
+                data-color="#af52de"
+                style="background: #af52de"
+                title="iOS Purple"
+              ></div>
+              <div
+                class="swatch"
+                data-color="#ff2d55"
+                style="background: #ff2d55"
+                title="iOS Pink"
+              ></div>
+              <div
+                class="swatch"
+                data-color="#00b4d8"
+                style="background: #00b4d8"
+                title="Ocean"
+              ></div>
+            </div>
+            <div class="inline-wrap" id="dp-custom"></div>
+            <div class="result" id="r-custom">Select a date…</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🎭 Custom renderDay</div>
+            <div class="card-desc">
+              Emojis injected into day cells. Even days get 🌟, odd days 🔵.
+            </div>
+            <div class="inline-wrap" id="dp-renderday"></div>
+            <div class="result" id="r-renderday">Select a date…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 6: iOS Wheel Picker ── -->
+      <section class="section">
+        <div class="section-title">🎡 iOS Wheel Picker (MomentumPicker)</div>
+        <div class="grid">
+          <div class="card">
+            <div class="card-title">📅 Date Wheel</div>
+            <div class="card-desc">
+              Year · Month · Day columns. Feb bug fixed!
+            </div>
+            <button class="btn" id="open-wheel-date">📅 Open Wheel Date</button>
+            <div class="result" id="r-wheel-date">Waiting…</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">⏰ Time Wheel</div>
+            <div class="card-desc">Hour · Minute — 5 min step.</div>
+            <button class="btn" id="open-wheel-time">⏰ Open Wheel Time</button>
+            <div class="result" id="r-wheel-time">Waiting…</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">📆 DateTime Wheel</div>
+            <div class="card-desc">All 5 columns. Formatted output.</div>
+            <button class="btn" id="open-wheel-dt">
+              📆 Open DateTime Wheel
+            </button>
+            <div class="result" id="r-wheel-dt">Waiting…</div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <!-- /.page -->
 
     <footer>
-      <p>
-        Built with
-        <a href="https://github.com/your-org/momentum-picker"
-          >momentum-picker</a
-        >
-        · Vanilla TypeScript · No dependencies
-      </p>
+      Built with
+      <a href="https://github.com/your-org/momentum-picker">momentum-picker</a>
+      · Vanilla TypeScript · Zero dependencies
     </footer>
 
-    <!-- Import the library:
-         In dev mode (npm run dev) → Vite resolves ../src/index.ts and injects styles.
-         In production (after npm run build) → swap to ../dist/momentum-picker.es.js -->
-    <link rel="stylesheet" href="../dist/style.css" />
+    <!-- ── Mount point for modal pickers (must be in body) ── -->
+    <div id="modal-mount"></div>
+
     <script type="module">
-      import MomentumPicker from "../src/index.ts";
+      import { MomentumPicker, DatePicker } from "../src/index.ts";
 
-      // ──────────────────────────────────────────────────────
-      // Helper: detect current page theme
-      // ──────────────────────────────────────────────────────
-      const body = document.getElementById("page-body");
-      const themeToggle = document.getElementById("theme-toggle");
-      let isDark = false;
+      // ── Theme toggle ──────────────────────────────────────────────────────
+      const body = document.getElementById("body");
+      const themeBtn = document.getElementById("theme-toggle");
+      let dark = false;
+      const allDPs = [];
 
-      themeToggle.addEventListener("click", () => {
-        isDark = !isDark;
-        body.classList.toggle("dark", isDark);
-        themeToggle.textContent = isDark ? "☀️" : "🌙";
-        // Propagate theme to open pickers handled in each picker's setOptions
-        [datePicker, timePicker, datetimePicker, customPicker].forEach((p) =>
-          p.setOptions({ theme: isDark ? "dark" : "light" }),
-        );
+      themeBtn.addEventListener("click", () => {
+        dark = !dark;
+        body.classList.toggle("dark", dark);
+        themeBtn.textContent = dark ? "☀️" : "🌙";
+        allDPs.forEach((p) => p.setOptions({ theme: dark ? "dark" : "light" }));
       });
 
-      // ──────────────────────────────────────────────────────
-      // 1. Date-only picker
-      // ──────────────────────────────────────────────────────
-      const datePicker = new MomentumPicker({
-        container: "#app",
-        mode: "date",
-        value: new Date(),
+      // ═══════════════════════════════════════════════════════════════════════
+      // 1. Inline Single — min=today
+      // ═══════════════════════════════════════════════════════════════════════
+      const dpSingle = new DatePicker({
+        container: "#dp-single",
+        displayMode: "inline",
+        mode: "single",
+        minDate: new Date(),
+        showToday: true,
+        showClear: true,
         format: "YYYY-MM-DD",
-        locale: "en-US",
-        onChange: (date, formatted) => {
-          document.getElementById("result-date").innerHTML =
-            `onChange → <span>${formatted ?? date.toDateString()}</span>`;
-        },
-        onConfirm: (date, formatted) => {
-          document.getElementById("result-date").innerHTML =
-            `✅ Confirmed → <span>${formatted ?? date.toDateString()}</span>`;
-        },
-        onCancel: () => {
-          document.getElementById("result-date").innerHTML = "❌ Cancelled";
+        onChange: (v, fmt) => {
+          document.getElementById("r-single").innerHTML = v
+            ? `onChange → <em>${fmt ?? v}</em>`
+            : "Cleared";
         },
       });
+      allDPs.push(dpSingle);
 
-      document
-        .getElementById("open-date")
-        .addEventListener("click", () => datePicker.show());
-
-      // ──────────────────────────────────────────────────────
-      // 2. Time-only picker (5-minute step)
-      // ──────────────────────────────────────────────────────
-      const timePicker = new MomentumPicker({
-        container: "#app",
-        mode: "time",
-        value: new Date(),
-        minuteStep: 5,
-        format: "HH:mm",
-        onChange: (_date, formatted) => {
-          document.getElementById("result-time").innerHTML =
-            `onChange → <span>${formatted}</span>`;
-        },
-        onConfirm: (_date, formatted) => {
-          document.getElementById("result-time").innerHTML =
-            `✅ Confirmed → <span>${formatted}</span>`;
-        },
-        onCancel: () => {
-          document.getElementById("result-time").innerHTML = "❌ Cancelled";
-        },
-      });
-
-      document
-        .getElementById("open-time")
-        .addEventListener("click", () => timePicker.show());
-
-      // ──────────────────────────────────────────────────────
-      // 3. Full DateTime picker
-      // ──────────────────────────────────────────────────────
-      const datetimePicker = new MomentumPicker({
-        container: "#app",
-        mode: "datetime",
-        value: new Date(),
-        format: "YYYY-MM-DD HH:mm",
-        onChange: (_date, formatted) => {
-          document.getElementById("result-datetime").innerHTML =
-            `onChange → <span>${formatted}</span>`;
-        },
-        onConfirm: (_date, formatted) => {
-          document.getElementById("result-datetime").innerHTML =
-            `✅ Confirmed → <span>${formatted}</span>`;
-        },
-        onCancel: () => {
-          document.getElementById("result-datetime").innerHTML = "❌ Cancelled";
+      // ═══════════════════════════════════════════════════════════════════════
+      // 2. Inline Range — disabled weekends
+      // ═══════════════════════════════════════════════════════════════════════
+      const dpRange = new DatePicker({
+        container: "#dp-range",
+        displayMode: "inline",
+        mode: "range",
+        showToday: true,
+        showClear: true,
+        disabledDates: (d) => d.getDay() === 0 || d.getDay() === 6,
+        format: "YYYY-MM-DD",
+        onChange: (v, fmt) => {
+          if (Array.isArray(v) && v[0] && v[1]) {
+            const f = Array.isArray(fmt) ? fmt.join(" → ") : "";
+            document.getElementById("r-range").innerHTML = `<em>${f}</em>`;
+          } else if (Array.isArray(v) && v[0]) {
+            document.getElementById("r-range").innerHTML =
+              `Start: <em>${Array.isArray(fmt) ? fmt[0] : ""}</em> — pick end`;
+          } else {
+            document.getElementById("r-range").textContent = "Select a range…";
+          }
         },
       });
+      allDPs.push(dpRange);
 
+      // ═══════════════════════════════════════════════════════════════════════
+      // 3. Inline Multiple — max=3 months from now
+      // ═══════════════════════════════════════════════════════════════════════
+      const maxDate3Mo = new Date();
+      maxDate3Mo.setMonth(maxDate3Mo.getMonth() + 3);
+
+      const dpMulti = new DatePicker({
+        container: "#dp-multi",
+        displayMode: "inline",
+        mode: "multiple",
+        maxDate: maxDate3Mo,
+        showToday: true,
+        showClear: true,
+        format: "MM-DD",
+        onChange: (v, fmt) => {
+          const chips = document.getElementById("chips-multi");
+          chips.innerHTML = "";
+          if (Array.isArray(v) && v.length > 0) {
+            (Array.isArray(fmt) ? fmt : []).forEach((f) => {
+              const el = document.createElement("span");
+              el.className = "chip";
+              el.textContent = f;
+              chips.appendChild(el);
+            });
+          } else {
+            document.getElementById("r-multi").textContent =
+              "No dates selected";
+          }
+        },
+      });
+      allDPs.push(dpMulti);
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // 4. Week Picker
+      // ═══════════════════════════════════════════════════════════════════════
+      const dpWeek = new DatePicker({
+        container: "#dp-week",
+        displayMode: "inline",
+        mode: "week",
+        weekStartsOn: 1,
+        showWeekNumbers: true,
+        showToday: true,
+        onChange: (v) => {
+          if (v instanceof Date) {
+            document.getElementById("r-week").innerHTML =
+              `Week of <em>${v.toLocaleDateString()}</em>`;
+          }
+        },
+      });
+      allDPs.push(dpWeek);
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // 5. Month Picker
+      // ═══════════════════════════════════════════════════════════════════════
+      const dpMonth = new DatePicker({
+        container: "#dp-month",
+        displayMode: "inline",
+        mode: "month",
+        format: "YYYY-MM",
+        onChange: (v, fmt) => {
+          document.getElementById("r-month").innerHTML =
+            `Selected: <em>${fmt ?? v}</em>`;
+        },
+      });
+      allDPs.push(dpMonth);
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // 6. Year Picker
+      // ═══════════════════════════════════════════════════════════════════════
+      const dpYear = new DatePicker({
+        container: "#dp-year",
+        displayMode: "inline",
+        mode: "year",
+        format: "YYYY",
+        onChange: (v, fmt) => {
+          document.getElementById("r-year").innerHTML =
+            `Selected: <em>${fmt ?? v}</em>`;
+        },
+      });
+      allDPs.push(dpYear);
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // 7. Popover — Single
+      // ═══════════════════════════════════════════════════════════════════════
+      const inputSingle = document.getElementById("input-single");
+      const dpPopoverSingle = new DatePicker({
+        anchor: "#input-single",
+        displayMode: "popover",
+        mode: "single",
+        showActions: true,
+        format: "YYYY-MM-DD",
+        onConfirm: (v) => {
+          if (v instanceof Date) {
+            const dt = v.toISOString().slice(0, 10);
+            inputSingle.value = dt;
+            document.getElementById("r-popover-single").innerHTML =
+              `✅ Confirmed: <em>${dt}</em>`;
+          }
+        },
+        onCancel: () => {
+          document.getElementById("r-popover-single").textContent =
+            "❌ Cancelled";
+        },
+        onOpenChange: (open) => {
+          inputSingle.style.borderColor = open ? "var(--accent)" : "";
+        },
+      });
+      allDPs.push(dpPopoverSingle);
+      inputSingle.addEventListener("click", () => dpPopoverSingle.toggle());
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // 8. Popover — Range, French locale
+      // ═══════════════════════════════════════════════════════════════════════
+      const inputRange = document.getElementById("input-range");
+      const dpPopoverRange = new DatePicker({
+        anchor: "#input-range",
+        displayMode: "popover",
+        mode: "range",
+        locale: "fr-FR",
+        showActions: true,
+        format: "DD/MM/YYYY",
+        onConfirm: (v) => {
+          if (Array.isArray(v) && v[0] && v[1]) {
+            const s = v[0].toLocaleDateString("fr-FR");
+            const e = v[1].toLocaleDateString("fr-FR");
+            inputRange.value = `${s} → ${e}`;
+            document.getElementById("r-popover-range").innerHTML =
+              `✅ <em>${s} → ${e}</em>`;
+          }
+        },
+        onCancel: () => {
+          document.getElementById("r-popover-range").textContent =
+            "❌ Cancelled";
+        },
+        onOpenChange: (open) => {
+          inputRange.style.borderColor = open ? "var(--accent)" : "";
+        },
+      });
+      allDPs.push(dpPopoverRange);
+      inputRange.addEventListener("click", () => dpPopoverRange.toggle());
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // 9. Modal — Single
+      // ═══════════════════════════════════════════════════════════════════════
+      const dpModalSingle = new DatePicker({
+        container: "#modal-mount",
+        displayMode: "modal",
+        mode: "single",
+        showActions: true,
+        showToday: true,
+        showClear: true,
+        format: "YYYY-MM-DD",
+        onConfirm: (v) => {
+          const dt = v instanceof Date ? v.toISOString().slice(0, 10) : null;
+          document.getElementById("r-modal-single").innerHTML = dt
+            ? `✅ Confirmed: <em>${dt}</em>`
+            : "Cleared";
+        },
+        onCancel: () => {
+          document.getElementById("r-modal-single").textContent =
+            "❌ Cancelled";
+        },
+      });
+      allDPs.push(dpModalSingle);
       document
-        .getElementById("open-datetime")
-        .addEventListener("click", () => datetimePicker.show());
+        .getElementById("open-modal-single")
+        .addEventListener("click", () => dpModalSingle.show());
 
-      // ──────────────────────────────────────────────────────
-      // 4. Custom colour picker
-      // ──────────────────────────────────────────────────────
+      // ═══════════════════════════════════════════════════════════════════════
+      // 10. Modal — Multi
+      // ═══════════════════════════════════════════════════════════════════════
+      const dpModalMulti = new DatePicker({
+        container: "#modal-mount",
+        displayMode: "modal",
+        mode: "multiple",
+        showActions: true,
+        showClear: true,
+        format: "YYYY-MM-DD",
+        onConfirm: (v) => {
+          const dates = Array.isArray(v) ? v : [];
+          document.getElementById("r-modal-multi").innerHTML =
+            dates.length > 0
+              ? `✅ ${dates.length} date(s): <em>${dates.map((d) => d.toISOString().slice(0, 10)).join(", ")}</em>`
+              : "Cleared";
+        },
+        onCancel: () => {
+          document.getElementById("r-modal-multi").textContent = "❌ Cancelled";
+        },
+      });
+      allDPs.push(dpModalMulti);
+      document
+        .getElementById("open-modal-multi")
+        .addEventListener("click", () => dpModalMulti.show());
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // 11. Custom accent color
+      // ═══════════════════════════════════════════════════════════════════════
       let currentColor = "#007aff";
+      const dpCustom = new DatePicker({
+        container: "#dp-custom",
+        displayMode: "inline",
+        mode: "single",
+        primaryColor: currentColor,
+        showToday: true,
+        showClear: true,
+        onChange: (v) => {
+          if (v instanceof Date)
+            document.getElementById("r-custom").innerHTML =
+              `onChange → <em style="color:${currentColor}">${v.toLocaleDateString()}</em>`;
+        },
+      });
+      allDPs.push(dpCustom);
 
       document.getElementById("swatches").addEventListener("click", (e) => {
-        const swatch = e.target.closest(".swatch");
-        if (!swatch) return;
+        const sw = e.target.closest(".swatch");
+        if (!sw) return;
         document
           .querySelectorAll(".swatch")
           .forEach((s) => s.classList.remove("active"));
-        swatch.classList.add("active");
-        currentColor = swatch.dataset.color;
-        customPicker.setOptions({ primaryColor: currentColor });
+        sw.classList.add("active");
+        currentColor = sw.dataset.color;
+        dpCustom.setOptions({ primaryColor: currentColor });
       });
 
-      const customPicker = new MomentumPicker({
-        container: "#app",
-        mode: "datetime",
-        value: new Date(),
-        primaryColor: currentColor,
-        itemHeight: 48,
-        visibleRows: 5,
-        onChange: (_date, _f) => {
-          document.getElementById("result-custom").innerHTML =
-            `onChange → <span style="color:${currentColor}">${_date.toLocaleString()}</span>`;
+      // ═══════════════════════════════════════════════════════════════════════
+      // 12. Custom renderDay — emoji cells
+      // ═══════════════════════════════════════════════════════════════════════
+      const dpRenderDay = new DatePicker({
+        container: "#dp-renderday",
+        displayMode: "inline",
+        mode: "single",
+        renderDay: (date, info) => {
+          if (info.isOutsideMonth || info.isDisabled) return null;
+          const emoji = date.getDate() % 2 === 0 ? "🌟" : "🔵";
+          return `<span title="${date.toDateString()}" style="font-size:11px;display:flex;flex-direction:column;align-items:center;gap:1px">
+            <span>${date.getDate()}</span>
+            <span style="font-size:9px">${emoji}</span>
+          </span>`;
         },
-        onConfirm: (date) => {
-          document.getElementById("result-custom").innerHTML =
-            `✅ Confirmed → <span style="color:${currentColor}">${date.toLocaleString()}</span>`;
+        onChange: (v) => {
+          if (v instanceof Date)
+            document.getElementById("r-renderday").innerHTML =
+              `onChange → <em>${v.toLocaleDateString()}</em>`;
+        },
+      });
+      allDPs.push(dpRenderDay);
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // 13. iOS Wheel Pickers
+      // ═══════════════════════════════════════════════════════════════════════
+      const wheelDate = new MomentumPicker({
+        container: "#modal-mount",
+        mode: "date",
+        format: "YYYY-MM-DD",
+        onConfirm: (_, fmt) => {
+          document.getElementById("r-wheel-date").innerHTML =
+            `✅ <em>${fmt}</em>`;
         },
         onCancel: () => {
-          document.getElementById("result-custom").innerHTML = "❌ Cancelled";
+          document.getElementById("r-wheel-date").textContent = "❌ Cancelled";
         },
       });
-
       document
-        .getElementById("open-custom")
-        .addEventListener("click", () => customPicker.show());
+        .getElementById("open-wheel-date")
+        .addEventListener("click", () => wheelDate.show());
+
+      const wheelTime = new MomentumPicker({
+        container: "#modal-mount",
+        mode: "time",
+        minuteStep: 5,
+        format: "HH:mm",
+        onConfirm: (_, fmt) => {
+          document.getElementById("r-wheel-time").innerHTML =
+            `✅ <em>${fmt}</em>`;
+        },
+        onCancel: () => {
+          document.getElementById("r-wheel-time").textContent = "❌ Cancelled";
+        },
+      });
+      document
+        .getElementById("open-wheel-time")
+        .addEventListener("click", () => wheelTime.show());
+
+      const wheelDT = new MomentumPicker({
+        container: "#modal-mount",
+        mode: "datetime",
+        format: "YYYY-MM-DD HH:mm",
+        onConfirm: (_, fmt) => {
+          document.getElementById("r-wheel-dt").innerHTML =
+            `✅ <em>${fmt}</em>`;
+        },
+        onCancel: () => {
+          document.getElementById("r-wheel-dt").textContent = "❌ Cancelled";
+        },
+      });
+      document
+        .getElementById("open-wheel-dt")
+        .addEventListener("click", () => wheelDT.show());
     </script>
   </body>
 </html>

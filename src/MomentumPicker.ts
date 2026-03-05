@@ -12,7 +12,7 @@
 //   • Provide a clean public API: show/hide/destroy/getValue/setValue
 // ─────────────────────────────────────────────────────────────────────────────
 
-import "./styles.css";
+import "./styles/wheel.css";
 
 import type {
   PickerOptions,
@@ -210,15 +210,26 @@ export class MomentumPicker {
     const value = col.getValue();
 
     switch (key) {
-      case "year":
-        this._value.setFullYear(value);
-        // Re-validate and rebuild day column (leap year / different month)
+      case "year": {
+        // Clamp day before changing year to avoid JS Date rollover
+        // e.g. Feb 29 on leap year → non-leap year would roll to Mar 1
+        const newYear = value;
+        const maxDayForYear = getDaysInMonth(newYear, this._value.getMonth());
+        this._value.setDate(Math.min(this._value.getDate(), maxDayForYear));
+        this._value.setFullYear(newYear);
         this.refreshDayColumn();
         break;
-      case "month":
-        this._value.setMonth(value);
+      }
+      case "month": {
+        // Clamp day before changing month to prevent JS Date rollover
+        // e.g. Jan 31 → Feb would roll over to Mar 2/3
+        const newMonth = value;
+        const maxDayForMonth = getDaysInMonth(this._value.getFullYear(), newMonth);
+        this._value.setDate(Math.min(this._value.getDate(), maxDayForMonth));
+        this._value.setMonth(newMonth);
         this.refreshDayColumn();
         break;
+      }
       case "day":
         this._value.setDate(value);
         break;

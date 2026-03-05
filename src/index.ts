@@ -1,11 +1,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // index.ts — Public entry point for momentum-picker.
 //
-// Consumers import from this file:
-//   import MomentumPicker from 'momentum-picker';
-//   import { MomentumPicker, type PickerOptions } from 'momentum-picker';
+// Exports:
+//   MomentumPicker  → iOS-style wheel datetime picker
+//   DatePicker      → Full-featured calendar date picker
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ── Wheel Picker ──────────────────────────────────────────────────────────────
 export { MomentumPicker } from "./MomentumPicker";
 export { WheelColumn } from "./WheelColumn";
 
@@ -18,5 +19,19 @@ export type {
   ResolvedOptions,
 } from "./types";
 
-// Default export for convenience
+// ── Calendar DatePicker ───────────────────────────────────────────────────────
+export { DatePicker } from "./calendar/DatePicker";
+
+export type {
+  DatePickerOptions,
+  SelectionMode,
+  DisplayMode,
+  ViewMode,
+  DPTheme,
+  DayRenderInfo,
+  PickerValue,
+  ResolvedDPOptions,
+} from "./calendar/types";
+
+// ── Default export: MomentumPicker (backwards compat) ─────────────────────────
 export { MomentumPicker as default } from "./MomentumPicker";

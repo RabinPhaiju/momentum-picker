@@ -1,0 +1,61 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   base.css — Shared CSS design tokens used by both wheel and calendar pickers.
+   Import this once; individual components extend these tokens.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Accent */
+  --mp-primary: #007aff;
+  --mp-primary-rgb: 0, 122, 255;
+
+  /* Surfaces */
+  --mp-bg:          #ffffff;
+  --mp-surface:     #f2f2f7;
+  --mp-surface-2:   #e5e5ea;
+
+  /* Text */
+  --mp-text:        #000000;
+  --mp-text-muted:  #8e8e93;
+  --mp-text-light:  #c7c7cc;
+
+  /* Border / Separator */
+  --mp-border:      rgba(60, 60, 67, 0.18);
+  --mp-separator:   rgba(60, 60, 67, 0.10);
+
+  /* Overlay */
+  --mp-overlay:     rgba(0, 0, 0, 0.45);
+
+  /* Radius */
+  --mp-radius-sm:   8px;
+  --mp-radius:      12px;
+  --mp-radius-lg:   16px;
+
+  /* Shadow */
+  --mp-shadow-sm:   0 1px 4px rgba(0,0,0,0.10);
+  --mp-shadow:      0 4px 16px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08);
+  --mp-shadow-lg:   0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
+
+  /* Typography */
+  --mp-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Transitions */
+  --mp-transition: 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --mp-transition-fast: 120ms ease;
+}
+
+/* ── Dark theme overrides ───────────────────────────────────────────────────── */
+[data-mp-theme="dark"],
+[data-dp-theme="dark"] {
+  --mp-bg:          #1c1c1e;
+  --mp-surface:     #2c2c2e;
+  --mp-surface-2:   #3a3a3c;
+  --mp-text:        #ffffff;
+  --mp-text-muted:  #636366;
+  --mp-text-light:  #48484a;
+  --mp-border:      rgba(255, 255, 255, 0.12);
+  --mp-separator:   rgba(255, 255, 255, 0.06);
+  --mp-overlay:     rgba(0, 0, 0, 0.65);
+  --mp-shadow:      0 4px 16px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.3);
+  --mp-shadow-lg:   0 8px 32px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.3);
+}

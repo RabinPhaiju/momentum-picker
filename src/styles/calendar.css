@@ -1,0 +1,510 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   calendar.css — Full-featured iOS/macOS-inspired calendar DatePicker styles.
+   Uses CSS custom properties from base.css for theming.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Calendar-specific tokens ─────────────────────────────────────────────── */
+.dp-root {
+  --dp-primary:        var(--mp-primary, #007aff);
+  --dp-primary-soft:   color-mix(in srgb, var(--dp-primary) 15%, transparent);
+  --dp-primary-hover:  color-mix(in srgb, var(--dp-primary) 85%, transparent);
+  --dp-bg:             var(--mp-bg, #ffffff);
+  --dp-surface:        var(--mp-surface, #f2f2f7);
+  --dp-text:           var(--mp-text, #000000);
+  --dp-text-muted:     var(--mp-text-muted, #8e8e93);
+  --dp-border:         var(--mp-border, rgba(60,60,67,.18));
+  --dp-shadow:         var(--mp-shadow-lg, 0 8px 32px rgba(0,0,0,0.18));
+  --dp-radius:         var(--mp-radius, 12px);
+  --dp-radius-lg:      var(--mp-radius-lg, 16px);
+  --dp-font:           var(--mp-font, system-ui, sans-serif);
+  --dp-cell-size:      38px;
+  --dp-cell-radius:    50%;   /* or 8px for square look */
+  --dp-header-height:  52px;
+  --dp-transition:     var(--mp-transition, 200ms ease);
+  --dp-overlay:        var(--mp-overlay, rgba(0,0,0,0.45));
+  --dp-today-border:   var(--dp-primary);
+  --dp-range-bg:       var(--dp-primary-soft);
+  --dp-week-highlight: color-mix(in srgb, var(--dp-primary) 8%, transparent);
+  --dp-outside-opacity: 0.3;
+  --dp-disabled-opacity: 0.25;
+}
+
+/* ── Popover / Modal overlay ──────────────────────────────────────────────── */
+.dp-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--dp-overlay);
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--dp-transition);
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.dp-overlay.dp-open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Panel (the white calendar card) ─────────────────────────────────────── */
+.dp-panel {
+  background: var(--dp-bg);
+  border-radius: var(--dp-radius-lg);
+  box-shadow: var(--dp-shadow);
+  border: 1px solid var(--dp-border);
+  width: 320px;
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: var(--dp-font);
+  overflow: hidden;
+  animation: dp-scale-in 180ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+/* Popover-specific panel (absolute positioned) */
+.dp-panel--popover {
+  position: fixed;
+  z-index: 2000;
+  animation: dp-fade-in 160ms ease both;
+}
+
+/* Inline-specific panel (no shadow, no border, full width) */
+.dp-panel--inline {
+  width: 100%;
+  box-shadow: none;
+  border: 1px solid var(--dp-border);
+  animation: none;
+}
+
+@keyframes dp-scale-in {
+  from { opacity: 0; transform: scale(0.95) translateY(-6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes dp-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.dp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 8px;
+  gap: 4px;
+}
+
+.dp-header-nav {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--dp-text-muted);
+  font-size: 16px;
+  transition: background var(--dp-transition-fast, 120ms), color var(--dp-transition-fast, 120ms);
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dp-header-nav:hover {
+  background: var(--dp-surface);
+  color: var(--dp-text);
+}
+
+.dp-header-nav:focus-visible {
+  outline: 2px solid var(--dp-primary);
+  outline-offset: 2px;
+}
+
+.dp-header-nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.dp-header-title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.dp-header-month,
+.dp-header-year {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dp-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-family: inherit;
+  transition: background var(--dp-transition-fast, 120ms);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dp-header-month:hover,
+.dp-header-year:hover {
+  background: var(--dp-surface);
+}
+
+.dp-header-month:focus-visible,
+.dp-header-year:focus-visible {
+  outline: 2px solid var(--dp-primary);
+  outline-offset: 2px;
+}
+
+/* ── Weekday labels ───────────────────────────────────────────────────────── */
+.dp-weekdays {
+  display: grid;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--dp-border);
+  padding-bottom: 8px;
+}
+
+.dp-weekdays--7 { grid-template-columns: repeat(7, 1fr); }
+.dp-weekdays--8 { grid-template-columns: 24px repeat(7, 1fr); }
+
+.dp-weekday-label {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--dp-text-muted);
+  padding: 4px 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.dp-weekday-label--weekend {
+  color: color-mix(in srgb, #ff3b30 70%, var(--dp-text-muted));
+}
+
+.dp-week-num-header {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--dp-text-muted);
+  text-align: center;
+  opacity: 0.5;
+}
+
+/* ── Calendar Grid ────────────────────────────────────────────────────────── */
+.dp-grid {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px 8px;
+  gap: 2px;
+}
+
+.dp-week-row {
+  display: grid;
+  align-items: center;
+  gap: 2px;
+}
+
+.dp-week-row--7 { grid-template-columns: repeat(7, 1fr); }
+.dp-week-row--8 { grid-template-columns: 24px repeat(7, 1fr); }
+
+/* Week number cell */
+.dp-week-num {
+  font-size: 10px;
+  color: var(--dp-text-muted);
+  text-align: center;
+  opacity: 0.5;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Day Cell ─────────────────────────────────────────────────────────────── */
+.dp-day {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--dp-cell-size);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--dp-text);
+  cursor: pointer;
+  border-radius: var(--dp-cell-radius);
+  transition:
+    background var(--dp-transition-fast, 120ms),
+    color var(--dp-transition-fast, 120ms),
+    transform 80ms ease;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  border: none;
+  background: none;
+}
+
+.dp-day:hover:not(.dp-day--disabled):not(.dp-day--selected) {
+  background: var(--dp-surface);
+}
+
+.dp-day:active:not(.dp-day--disabled) {
+  transform: scale(0.9);
+}
+
+.dp-day:focus-visible {
+  outline: 2px solid var(--dp-primary);
+  outline-offset: 1px;
+}
+
+/* Today indicator (dot below date) */
+.dp-day--today::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--dp-primary);
+}
+
+/* Today cell — underline/border */
+.dp-day--today:not(.dp-day--selected) {
+  font-weight: 600;
+  border: 1.5px solid var(--dp-today-border);
+}
+
+/* Selected single day */
+.dp-day--selected {
+  background: var(--dp-primary) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.dp-day--selected::after {
+  background: rgba(255,255,255,0.7);
+}
+
+/* Range band: days BETWEEN start and end */
+.dp-day--in-range {
+  background: var(--dp-range-bg);
+  border-radius: 0;
+}
+
+/* Extend range band to edges of cell */
+.dp-day--range-start {
+  background: var(--dp-primary) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  border-radius: var(--dp-cell-radius) 0 0 var(--dp-cell-radius);
+}
+
+.dp-day--range-end {
+  background: var(--dp-primary) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  border-radius: 0 var(--dp-cell-radius) var(--dp-cell-radius) 0;
+}
+
+/* Range-start that is also range-end (single selected in range) */
+.dp-day--range-start.dp-day--range-end {
+  border-radius: var(--dp-cell-radius);
+}
+
+/* Hover preview during range drag */
+.dp-day--in-range-preview {
+  background: var(--dp-range-bg);
+  border-radius: 0;
+}
+
+/* Full week highlight */
+.dp-week-row--selected .dp-day:not(.dp-day--outside) {
+  background: var(--dp-week-highlight);
+}
+
+.dp-week-row--selected .dp-day:first-child {
+  border-radius: var(--dp-cell-radius) 0 0 var(--dp-cell-radius);
+}
+
+.dp-week-row--selected .dp-day:last-child {
+  border-radius: 0 var(--dp-cell-radius) var(--dp-cell-radius) 0;
+}
+
+/* Outside month */
+.dp-day--outside {
+  opacity: var(--dp-outside-opacity);
+  pointer-events: none;
+}
+
+/* Weekend style */
+.dp-day--weekend:not(.dp-day--selected):not(.dp-day--range-start):not(.dp-day--range-end) {
+  color: color-mix(in srgb, #ff3b30 80%, var(--dp-text));
+}
+
+/* Disabled */
+.dp-day--disabled {
+  opacity: var(--dp-disabled-opacity);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Multiple selected */
+.dp-day--multi-selected {
+  background: var(--dp-primary) !important;
+  color: #ffffff !important;
+}
+
+/* ── Month/Year Panel Grid ─────────────────────────────────────────────────── */
+.dp-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 8px 12px 12px;
+}
+
+.dp-panel-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dp-text);
+  background: none;
+  border: none;
+  border-radius: var(--dp-radius);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--dp-transition-fast, 120ms);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dp-panel-item:hover {
+  background: var(--dp-surface);
+}
+
+.dp-panel-item:focus-visible {
+  outline: 2px solid var(--dp-primary);
+  outline-offset: 2px;
+}
+
+.dp-panel-item--selected {
+  background: var(--dp-primary) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.dp-panel-item--today {
+  border: 1.5px solid var(--dp-primary);
+  font-weight: 600;
+}
+
+.dp-panel-item--disabled {
+  opacity: var(--dp-disabled-opacity);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+.dp-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--dp-border);
+}
+
+.dp-footer-left { display: flex; gap: 4px; }
+.dp-footer-right { display: flex; gap: 6px; }
+
+.dp-btn {
+  font-family: var(--dp-font);
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--dp-radius);
+  cursor: pointer;
+  padding: 7px 14px;
+  transition: background var(--dp-transition-fast, 120ms), opacity 120ms;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dp-btn:focus-visible {
+  outline: 2px solid var(--dp-primary);
+  outline-offset: 2px;
+}
+
+.dp-btn--ghost {
+  background: none;
+  color: var(--dp-primary);
+}
+
+.dp-btn--ghost:hover { background: var(--dp-primary-soft); }
+
+.dp-btn--cancel {
+  background: var(--dp-surface);
+  color: var(--dp-text-muted);
+}
+
+.dp-btn--cancel:hover { opacity: 0.7; }
+
+.dp-btn--confirm {
+  background: var(--dp-primary);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.dp-btn--confirm:hover { opacity: 0.85; }
+.dp-btn--confirm:active { opacity: 0.7; }
+
+/* ── Input wrapper (for popover anchor styling) ────────────────────────────── */
+.dp-input-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.dp-input {
+  font-family: var(--dp-font);
+  font-size: 14px;
+  padding: 8px 36px 8px 12px;
+  border: 1.5px solid var(--dp-border);
+  border-radius: var(--dp-radius);
+  background: var(--dp-bg);
+  color: var(--dp-text);
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color var(--dp-transition-fast, 120ms), box-shadow var(--dp-transition-fast, 120ms);
+}
+
+.dp-input:focus {
+  border-color: var(--dp-primary);
+  box-shadow: 0 0 0 3px var(--dp-primary-soft);
+}
+
+.dp-input-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--dp-text-muted);
+  font-size: 16px;
+}
+
+/* ── Validation error tooltip ─────────────────────────────────────────────── */
+.dp-error {
+  font-size: 12px;
+  color: #ff3b30;
+  padding: 4px 12px 8px;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 360px) {
+  .dp-panel { width: 100%; border-radius: 0; }
+}
