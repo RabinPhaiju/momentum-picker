@@ -76,6 +76,18 @@ export function handleOutsideClick(this: DatePicker, e: MouseEvent): void {
 }
 
 export function handleCancel(this: DatePicker): void {
+  // If we're in range mode and only the start date has been chosen, cancel should
+  // reset the value entirely rather than leaving a half‑filled range. This matches
+  // the behaviour described by users: clicking outside with an incomplete range
+  // should clear the selection.
+  if (this.opts.mode === "range") {
+    const [s, e] = this._value as [Date | null, Date | null];
+    if (s && !e) {
+      // reuse existing helper to reset everything
+      this._clearValue();
+    }
+  }
+
   this.opts.onCancel?.();
   this._hide();
 }

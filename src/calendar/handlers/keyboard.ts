@@ -51,7 +51,7 @@ export function moveFocus(this: DatePicker, delta: number): void {
   this._refresh();
 
   requestAnimationFrame(() => {
-    const cells = this._getPanel()?.querySelectorAll<HTMLElement>(".dp-day") ?? [];
+    const cells = Array.from(this._getPanel()?.querySelectorAll<HTMLElement>(".dp-day") ?? []);
     for (const cell of cells) {
       if (cell.tabIndex === 0) { cell.focus(); break; }
     }

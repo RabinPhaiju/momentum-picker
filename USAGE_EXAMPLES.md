@@ -327,7 +327,33 @@ const rangePicker = new DatePicker({
 
 ---
 
-### 14. Form Integration
+### 14. Advanced DatePicker (Time + Presets)
+
+```typescript
+import { DatePicker } from 'momentum-picker';
+
+const advancedPicker = new DatePicker({
+  container: '#advanced-picker',
+  displayMode: 'inline',
+  mode: 'range',
+  showTimePicker: true,
+  presets: [
+    { label: 'Today', getValue: () => [new Date(), new Date()] },
+    { label: 'This Week', getValue: () => {
+        const start = new Date();
+        start.setDate(start.getDate() - start.getDay());
+        return [start, new Date()];
+      }
+    }
+  ],
+  footerPosition: 'top',
+  onConfirm: (val) => console.log('Confirmed range:', val),
+});
+```
+
+---
+
+### 15. Form Integration with Hidden Input
 
 ```typescript
 const form = document.getElementById('booking-form');

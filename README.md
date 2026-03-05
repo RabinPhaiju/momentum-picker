@@ -12,14 +12,14 @@
 ## Features
 
 - 🎡 **Smooth wheel columns** — exact iOS feel with infinite scroll illusion
-- ⚡ **Momentum scrolling** — natural inertia + snap-to-item
-- 📅 **Three modes** — `date`, `time`, `datetime`
+- 📅 **DatePicker (Calendar)** — modern, full-featured calendar for date selection
+- ⚡ **Momentum scrolling** — natural inertia + snap-to-item (Wheel mode)
+- 📅 **Multiple modes** — `date`, `time`, `datetime`, `range`, `multiple`
 - 🖱️ **Touch & Mouse** — works on mobile and desktop
 - 🌙 **Light / Dark** theme out of the box
-- 🎨 **CSS variables** — one-line customisation
-- ♿ **Accessible** — ARIA listbox/option roles, keyboard navigation, focus management
+- 🎨 **16+ Premium Styles** — Material, Brutalist, Brutalist, Retro, Neumorphism, etc.
+- ♿ **Accessible** — ARIA roles, keyboard navigation, focus management
 - 🔌 **Framework-agnostic** — React + Vue wrappers included
-- 📦 **ESM + CJS** — works everywhere
 
 ---
 
@@ -27,38 +27,39 @@
 
 ```bash
 npm install momentum-picker
-# or
-pnpm add momentum-picker
-# or
-yarn add momentum-picker
 ```
 
 ---
 
 ## Quick Start
 
-### Vanilla JavaScript / TypeScript
+### 🎡 Wheel Picker (iOS-style)
 
 ```ts
 import MomentumPicker from 'momentum-picker';
 import 'momentum-picker/style.css';
 
-const picker = new MomentumPicker({
-  container: '#app',        // CSS selector or HTMLElement
+const wheel = new MomentumPicker({
+  container: '#app',
   mode: 'datetime',
-  value: new Date(),
-  format: 'YYYY-MM-DD HH:mm',
-  onChange: (date, formatted) => {
-    console.log('Changed:', formatted);
-  },
-  onConfirm: (date, formatted) => {
-    console.log('Confirmed:', formatted);
-    picker.hide();
-  },
-  onCancel: () => picker.hide(),
+  onConfirm: (date) => console.log('Confirmed:', date),
 });
 
-picker.show();
+wheel.show();
+```
+
+### 📅 Calendar Picker (Modern)
+
+```ts
+import { DatePicker } from 'momentum-picker';
+
+const calendar = new DatePicker({
+  container: '#app',
+  mode: 'range',        // 'single' | 'range' | 'multiple'
+  displayMode: 'inline', // 'inline' | 'popover' | 'modal'
+  showTimePicker: true,
+  onChange: (val) => console.log('Selection:', val),
+});
 ```
 
 ### React

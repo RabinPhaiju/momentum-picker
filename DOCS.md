@@ -112,12 +112,37 @@ const timePicker = new MomentumPicker({
 - `month` — Month selection
 - `year` — Year selection
 
+**Key Features:**
+
+- **Time Selection:** Enable `showTimePicker` to add a high-quality time input area.
+- **Presets:** Provide quick-select options like "Today", "Yesterday", "Last 7 Days".
+- **Keyboard Navigation:** Full grid-based arrow key navigation.
+- **Custom Rendering:** Hook into `renderDay` to customize individual cell appearance.
+
 ```typescript
-const weekPicker = new DatePicker({
-  mode: 'week',
+const rangePicker = new DatePicker({
+  mode: 'range',
+  showTimePicker: true,
+  presets: [
+    { label: 'Today', getValue: () => [new Date(), new Date()] },
+    { label: 'Last 7 Days', getValue: () => {
+        const start = new Date();
+        start.setDate(start.getDate() - 7);
+        return [start, new Date()];
+      }
+    }
+  ],
   weekStartsOn: 1,  // 0 = Sunday, 1 = Monday
   showWeekNumbers: true,
+  onChange: (val) => console.log('Range changed:', val),
 });
+
+// Mobile-specific notes:
+// • After choosing a start date, you can drag your finger over the calendar to
+//   preview the second date. Horizontal swipes will **not** change months while
+//   a start date is active, avoiding accidental navigation.
+// • If you tap or click outside the picker before selecting an end date, the
+//   partial range is cleared automatically.
 ```
 
 ---

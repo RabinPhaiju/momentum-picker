@@ -56,6 +56,7 @@ import {
   emitConfirm,
   showValidationError,
   handleTouchStart,
+  handleTouchMove,
   handleTouchEnd,
   handlePaste,
 } from "./handlers";
@@ -90,6 +91,10 @@ export class DatePicker {
   // Touch/swipe tracking
   _touchStartX = 0;
   _touchStartY = 0;
+
+  // This bound reference is needed when attaching listeners so we can remove them
+  // later if the picker is destroyed.
+  private _boundTouchMove: ((e: TouchEvent) => void) | null = null;
 
   // ── DOM roots ──────────────────────────────────────────────────────────────
   _containerEl: HTMLElement | null = null;
@@ -291,6 +296,11 @@ export class DatePicker {
       if (this._boundPaste) document.addEventListener("paste", this._boundPaste);
     }
 
+    // We'll also listen for touchmove inside the panel when the picker is used
+    // for a range. The binding is stored so that it can be cleaned up in
+    // destroy().
+    this._boundTouchMove = this._handleTouchMove.bind(this);
+
     // Touch swipe gestures — attached after panel is created
     // (done in _show / after mount so panel exists)
     this._attachTouchListeners();
@@ -343,6 +353,7 @@ export class DatePicker {
   _emitConfirm = emitConfirm;
   _showValidationError = showValidationError;
   _handleTouchStart = handleTouchStart;
+  _handleTouchMove = handleTouchMove;
   _handleTouchEnd = handleTouchEnd;
   _handlePaste = handlePaste;
 
@@ -350,7 +361,10 @@ export class DatePicker {
   _attachTouchListeners(): void {
     const panel = this._getPanel();
     if (!panel) return;
-    panel.addEventListener("touchstart", (e: TouchEvent) => this._handleTouchStart(e), { passive: true });
+    // we need non-passive listeners because we sometimes call preventDefault to
+    // suppress the native scroll/swipe when we are dragging a range.
+    panel.addEventListener("touchstart", (e: TouchEvent) => this._handleTouchStart(e), { passive: false });
+    panel.addEventListener("touchmove", (e: TouchEvent) => this._handleTouchMove(e), { passive: false });
     panel.addEventListener("touchend", (e: TouchEvent) => this._handleTouchEnd(e), { passive: true });
   }
 
@@ -426,6 +440,7 @@ export class DatePicker {
     if (this._boundMouseup) window.removeEventListener("mouseup", this._boundMouseup);
     if (this._boundOutsideClick) document.removeEventListener("click", this._boundOutsideClick, true);
     if (this._boundPaste) document.removeEventListener("paste", this._boundPaste);
+    if (this._boundTouchMove) this._getPanel()?.removeEventListener("touchmove", this._boundTouchMove);
     this._stopAutoUpdate?.();
     this._overlayEl?.remove();
     this._overlayEl = null;

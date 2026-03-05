@@ -14,6 +14,12 @@ export function handleTouchStart(this: DatePicker, e: TouchEvent): void {
 export function handleTouchEnd(this: DatePicker, e: TouchEvent): void {
   const touch = e.changedTouches[0];
   if (!touch) return;
+
+  // reset drag flag (if we started one via touchstart above)
+  if (this._isDragging) {
+    this._isDragging = false;
+  }
+
   const deltaX = touch.clientX - this._touchStartX;
   const deltaY = touch.clientY - this._touchStartY;
   if (Math.abs(deltaX) < 50) return;
@@ -47,6 +53,12 @@ function tryParseDate(text: string): Date | null {
     }
   }
   return null;
+}
+
+export function handleTouchMove(this: DatePicker, e: TouchEvent): void {
+  // Previously used for range-drag. Removed to ensure reliable swipe navigation.
+  if (this.opts.mode !== "range" || !this._isDragging) return;
+  e.preventDefault();
 }
 
 export function handlePaste(this: DatePicker, e: ClipboardEvent): void {

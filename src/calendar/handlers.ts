@@ -20,6 +20,7 @@ export {
   moveFocus,
   handleGlobalMouseup,
   handleTouchStart,
+  handleTouchMove,
   handleTouchEnd,
   handlePaste,
 } from "./handlers/index";

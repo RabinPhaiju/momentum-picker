@@ -436,13 +436,47 @@ interface PickerOptions {
 ```typescript
 interface DatePickerOptions extends PickerOptions {
   mode: 'single' | 'range' | 'multiple' | 'week' | 'month' | 'year';
-  weekStartsOn?: number;
+  displayMode?: 'inline' | 'popover' | 'modal';
+  
+  // Selection
+  value?: PickerValue;             // Date | [Date, Date] | Date[]
+  defaultValue?: PickerValue;
+  minDate?: Date | null;
+  maxDate?: Date | null;
+  disabledDates?: (date: Date) => boolean;
+  disabledRanges?: [Date, Date][];
+  
+  // Formatting & Locale
+  format?: string | null;
+  locale?: string;
+  weekStartsOn?: number;           // 0 = Sunday, 1 = Monday
   showWeekNumbers?: boolean;
+  
+  // UI Features
   showToday?: boolean;
   showClear?: boolean;
   showActions?: boolean;
-  disabledDates?: (date: Date) => boolean;
-  renderDay?: (date: Date, info: DayInfo) => string | null;
+  showTimePicker?: boolean;        // Add time selection inputs
+  showSeconds?: boolean;
+  allowPaste?: boolean;            // Detect clipboard paste
+  
+  // Header & Footer
+  renderHeader?: (date: Date) => string | HTMLElement;
+  renderDay?: (date: Date, info: DayRenderInfo) => string | HTMLElement;
+  presets?: DatePreset[];          // [{ label: 'Today', getValue: () => Date }]
+  footerButtons?: FooterButton[];  // Custom buttons in footer
+  footerPosition?: 'bottom' | 'top';
+
+  // State Management
+  open?: boolean;
+  defaultOpen?: boolean;
+  
+  // Callbacks
+  onChange?: (val: PickerValue) => void;
+  onConfirm?: (val: PickerValue) => void;
+  onCancel?: () => void;
+  onValidate?: (val: PickerValue) => string | null; // Custom validation
+  onOpenChange?: (open: boolean) => void;
 }
 ```
 

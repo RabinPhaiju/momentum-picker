@@ -135,6 +135,11 @@ export function buildDayCell(
   };
 
   let cell: HTMLElement;
+  // expose the date on the element so touch handlers can look it up later
+  // (used for range-drag support on mobile). storing the ISO string is
+  // cheap and avoids any runtime calculation during touchmove.
+  const dateIso = date.toISOString();
+
   if (this.opts.renderDay) {
     const custom = this.opts.renderDay(date, info);
     if (custom) {
@@ -148,6 +153,10 @@ export function buildDayCell(
   } else {
     cell = this._buildDefaultDayCell(date, info);
   }
+
+  // attach the ISO string regardless of render mode; the attribute is useful
+  // for touch-drag range selection and doesn't affect styling.
+  cell.dataset.date = dateIso;
 
   const classes: string[] = [];
   if (todayFlag) classes.push("dp-day--today");
@@ -174,21 +183,11 @@ export function buildDayCell(
       cell.addEventListener("click", () => this._handleDayClick(date));
     }
     if (mode === "range") {
-      cell.addEventListener("mouseenter", () => {
-        const [s, e] = this._value as [Date | null, Date | null];
-        if (s && !e) { this._rangeHover = date; this._refresh(); }
-      });
-      cell.addEventListener("mousedown", (e) => {
-        if (isOutside) return;
-        e.preventDefault();
-        this._isDragging = true;
-        this._rangeAnchor = date;
-        this._value = [date, null];
-        this._rangeHover = date;
-        this._refresh();
-      });
-      cell.addEventListener("mousemove", () => {
-        if (this._isDragging && this._rangeAnchor) {
+      cell.addEventListener("pointerenter", (e: PointerEvent) => {
+        if (e.pointerType !== "mouse") return;
+        const [s, eVal] = (this._value as [Date | null, Date | null]) ?? [null, null];
+        if (s && !eVal) {
+          if (this._rangeHover && isSameDay(this._rangeHover, date)) return;
           this._rangeHover = date;
           this._refresh();
         }

@@ -13,4 +13,4 @@ export {
   showValidationError,
 } from "./show-hide";
 export { handleGlobalKeydown, moveFocus, handleGlobalMouseup } from "./keyboard";
-export { handleTouchStart, handleTouchEnd, handlePaste } from "./touch-paste";
+export { handleTouchStart, handleTouchMove, handleTouchEnd, handlePaste } from "./touch-paste";
