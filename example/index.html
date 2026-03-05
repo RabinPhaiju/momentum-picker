@@ -114,6 +114,9 @@
       .grid--2 {
         grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       }
+      .grid--3 {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
 
       /* ── Card ── */
       .card {
@@ -370,19 +373,6 @@
         </div>
       </section>
 
-      <!-- ── Section 1b: Multi-month Range ── -->
-      <section class="section">
-        <div class="section-title">📅 2-Month Range Picker</div>
-        <div class="card">
-          <div class="card-title">📏 Date Range — 2 Calendars</div>
-          <div class="card-desc">
-            Shows 2 months side by side. Use <code>numberOfMonths: 2</code>.
-          </div>
-          <div class="inline-wrap" id="dp-range2"></div>
-          <div class="result" id="r-range2">Select a range…</div>
-        </div>
-      </section>
-
       <!-- ── Section 2: Picker Mode (Week / Month / Year) ── -->
       <section class="section">
         <div class="section-title">🗓️ Granularity Modes</div>
@@ -390,7 +380,10 @@
           <!-- Week -->
           <div class="card">
             <div class="card-title">📆 Week Picker</div>
-            <div class="card-desc">Select an entire week. Week numbers shown on left — click to select that week too.</div>
+            <div class="card-desc">
+              Select an entire week. Week numbers shown on left — click to
+              select that week too.
+            </div>
             <div class="inline-wrap" id="dp-week"></div>
             <div class="result" id="r-week">Select a week…</div>
           </div>
@@ -408,7 +401,9 @@
           <!-- Year -->
           <div class="card">
             <div class="card-title">🗓️ Year Picker</div>
-            <div class="card-desc">Opens directly in year view — no day grid shown.</div>
+            <div class="card-desc">
+              Opens directly in year view — no day grid shown.
+            </div>
             <div class="inline-wrap" id="dp-year"></div>
             <div class="result" id="r-year">Select a year…</div>
           </div>
@@ -418,7 +413,7 @@
       <!-- ── Section 3: Popover Mode ── -->
       <section class="section">
         <div class="section-title">💬 Popover Mode (Auto-flip)</div>
-        <div class="grid grid--2">
+        <div class="grid grid--3">
           <div class="card">
             <div class="card-title">📅 Date Popover</div>
             <div class="card-desc">
@@ -448,13 +443,28 @@
             />
             <div class="result" id="r-popover-range">Click input above…</div>
           </div>
+
+          <div class="card">
+            <div class="card-title">🔢 Multi-date Popover</div>
+            <div class="card-desc">
+              Select multiple dates. Confirm when done.
+            </div>
+            <input
+              class="dp-input"
+              id="input-multi"
+              placeholder="Pick multiple dates…"
+              readonly
+              aria-label="Multi-date picker input"
+            />
+            <div class="result" id="r-popover-multi">Click input above…</div>
+          </div>
         </div>
       </section>
 
       <!-- ── Section 4: Modal Mode ── -->
       <section class="section">
         <div class="section-title">🪟 Modal Mode</div>
-        <div class="grid grid--2">
+        <div class="grid grid--3">
           <div class="card">
             <div class="card-title">📅 Single + Confirm</div>
             <div class="card-desc">
@@ -464,6 +474,15 @@
               📅 Open Date Modal
             </button>
             <div class="result" id="r-modal-single">Waiting…</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">📏 Date Range Modal</div>
+            <div class="card-desc">Select a start and end date in a modal.</div>
+            <button class="btn" id="open-modal-range">
+              📏 Open Range Modal
+            </button>
+            <div class="result" id="r-modal-range">Waiting…</div>
           </div>
 
           <div class="card">
@@ -687,42 +706,22 @@
         displayMode: "inline",
         mode: "week",
         weekStartsOn: 1,
-        showWeekNumbers: true,  // week numbers always shown in week mode by default
+        showWeekNumbers: true, // week numbers always shown in week mode by default
         showToday: true,
         onChange: (v) => {
           if (v instanceof Date) {
-            const weekNum = Math.ceil((((v - new Date(v.getFullYear(), 0, 1)) / 86400000) + new Date(v.getFullYear(), 0, 1).getDay() + 1) / 7);
+            const weekNum = Math.ceil(
+              ((v - new Date(v.getFullYear(), 0, 1)) / 86400000 +
+                new Date(v.getFullYear(), 0, 1).getDay() +
+                1) /
+                7,
+            );
             document.getElementById("r-week").innerHTML =
               `Week of <em>${v.toLocaleDateString()}</em>`;
           }
         },
       });
       allDPs.push(dpWeek);
-
-      // ═══════════════════════════════════════════════════════════════════════
-      // 4b. 2-month range picker
-      // ═══════════════════════════════════════════════════════════════════════
-      const dpRange2 = new DatePicker({
-        container: "#dp-range2",
-        displayMode: "inline",
-        mode: "range",
-        numberOfMonths: 2,
-        showToday: true,
-        showClear: true,
-        format: "YYYY-MM-DD",
-        onChange: (v, fmt) => {
-          if (Array.isArray(v) && v[0] && v[1]) {
-            const f = Array.isArray(fmt) ? fmt.join(" → ") : "";
-            document.getElementById("r-range2").innerHTML = `<em>${f}</em>`;
-          } else if (Array.isArray(v) && v[0]) {
-            document.getElementById("r-range2").innerHTML =
-              `Start: <em>${Array.isArray(fmt) ? fmt[0] : ""}</em> — pick end`;
-          } else {
-            document.getElementById("r-range2").textContent = "Select a range…";
-          }
-        },
-      });
-      allDPs.push(dpRange2);
 
       // ═══════════════════════════════════════════════════════════════════════
       // 5. Month Picker
@@ -815,6 +814,42 @@
       inputRange.addEventListener("click", () => dpPopoverRange.toggle());
 
       // ═══════════════════════════════════════════════════════════════════════
+      // 8b. Popover — Multi-date
+      // ═══════════════════════════════════════════════════════════════════════
+      const inputMulti = document.getElementById("input-multi");
+      const dpPopoverMulti = new DatePicker({
+        anchor: "#input-multi",
+        displayMode: "popover",
+        mode: "multiple",
+        showActions: true,
+        showClear: true,
+        format: "YYYY-MM-DD",
+        onConfirm: (v) => {
+          const dates = Array.isArray(v) ? v : [];
+          if (dates.length > 0) {
+            const formatted = dates
+              .map((d) => d.toISOString().slice(0, 10))
+              .join(", ");
+            inputMulti.value = `${dates.length} date(s)`;
+            document.getElementById("r-popover-multi").innerHTML =
+              `✅ ${dates.length} date(s): <em>${formatted}</em>`;
+          } else {
+            inputMulti.value = "";
+            document.getElementById("r-popover-multi").textContent = "Cleared";
+          }
+        },
+        onCancel: () => {
+          document.getElementById("r-popover-multi").textContent =
+            "❌ Cancelled";
+        },
+        onOpenChange: (open) => {
+          inputMulti.style.borderColor = open ? "var(--accent)" : "";
+        },
+      });
+      allDPs.push(dpPopoverMulti);
+      inputMulti.addEventListener("click", () => dpPopoverMulti.toggle());
+
+      // ═══════════════════════════════════════════════════════════════════════
       // 9. Modal — Single
       // ═══════════════════════════════════════════════════════════════════════
       const dpModalSingle = new DatePicker({
@@ -840,6 +875,36 @@
       document
         .getElementById("open-modal-single")
         .addEventListener("click", () => dpModalSingle.show());
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // 9b. Modal — Range
+      // ═══════════════════════════════════════════════════════════════════════
+      const dpModalRange = new DatePicker({
+        container: "#modal-mount",
+        displayMode: "modal",
+        mode: "range",
+        showActions: true,
+        showToday: true,
+        showClear: true,
+        format: "YYYY-MM-DD",
+        onConfirm: (v) => {
+          if (Array.isArray(v) && v[0] && v[1]) {
+            const s = v[0].toISOString().slice(0, 10);
+            const e = v[1].toISOString().slice(0, 10);
+            document.getElementById("r-modal-range").innerHTML =
+              `✅ Confirmed: <em>${s} → ${e}</em>`;
+          } else {
+            document.getElementById("r-modal-range").textContent = "Cleared";
+          }
+        },
+        onCancel: () => {
+          document.getElementById("r-modal-range").textContent = "❌ Cancelled";
+        },
+      });
+      allDPs.push(dpModalRange);
+      document
+        .getElementById("open-modal-range")
+        .addEventListener("click", () => dpModalRange.show());
 
       // ═══════════════════════════════════════════════════════════════════════
       // 10. Modal — Multi

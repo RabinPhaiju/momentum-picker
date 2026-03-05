@@ -54,6 +54,7 @@ export class WheelColumn {
     velocity: 0,
     samples: [],
   };
+  private _wheelTimeout: number | null = null;
 
   // ── Callback ────────────────────────────────────────────────────────────────
   private onSelect: (index: number) => void;
@@ -89,6 +90,7 @@ export class WheelColumn {
     // Attach event listeners
     this.attachPointerListeners();
     this.attachKeyboardListeners();
+    this.attachWheelListener();
   }
 
   // ── DOM Construction ────────────────────────────────────────────────────────
@@ -234,6 +236,7 @@ export class WheelColumn {
     const animate = () => {
       vel *= FRICTION;
       this.currentOffset += vel;
+      this.checkWrap(); // Teleport during momentum for infinite feel
       this.applyTransform(this.currentOffset, false);
 
       if (Math.abs(vel) > MIN_VELOCITY) {
@@ -330,6 +333,7 @@ export class WheelColumn {
 
     const delta = clientY - this.pointer.lastY;
     this.currentOffset += delta;
+    this.checkWrap(); // Teleport during drag
     this.applyTransform(this.currentOffset, false);
 
     const now = performance.now();
@@ -376,6 +380,57 @@ export class WheelColumn {
     const style = window.getComputedStyle(this.list);
     const matrix = new DOMMatrix(style.transform);
     this.currentOffset = matrix.m42; // translateY component
+  }
+
+  /**
+   * Continuous wrap check: if we scroll past the "middle" copy's bounds,
+   * teleport by exactly one list height so the transition is seamless.
+   */
+  private checkWrap(): void {
+    const totalH = this.items.length * this.itemHeight;
+    // We want to keep currentOffset roughly between -totalH and -2*totalH
+    if (this.currentOffset < -totalH * 2) {
+      this.currentOffset += totalH;
+    } else if (this.currentOffset > -totalH) {
+      this.currentOffset -= totalH;
+    }
+  }
+
+  // ── Wheel Listener ──────────────────────────────────────────────────────────
+
+  private attachWheelListener(): void {
+    this.el.addEventListener(
+      "wheel",
+      (e: WheelEvent) => {
+        // Prevent page scroll
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Cancel any active animation
+        if (this.raf !== null) {
+          cancelAnimationFrame(this.raf);
+          this.raf = null;
+        }
+
+        // Apply scroll delta
+        // Use a multiplier to make trackpad scrolling feel more natural if needed,
+        // but default deltaY is usually fine.
+        this.currentOffset -= e.deltaY;
+        this.checkWrap(); // Teleport during wheel scroll
+        this.applyTransform(this.currentOffset, false);
+
+        // Snap after scrolling stops
+        if (this._wheelTimeout !== null) {
+          window.clearTimeout(this._wheelTimeout);
+        }
+
+        this._wheelTimeout = window.setTimeout(() => {
+          this.snap();
+          this._wheelTimeout = null;
+        }, 150);
+      },
+      { passive: false },
+    );
   }
 
   // ── Keyboard Navigation ────────────────────────────────────────────────────

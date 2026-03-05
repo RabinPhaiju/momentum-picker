@@ -41,8 +41,6 @@ export function computePosition(
   const fHeight = floating.offsetHeight;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const scrollX = window.scrollX;
-  const scrollY = window.scrollY;
 
   // ── Candidate positions ────────────────────────────────────────────────────
 
@@ -50,49 +48,44 @@ export function computePosition(
     let top = 0;
     let left = 0;
 
-    // Vertical
+    // Vertical — use viewport-relative coords (for position: fixed)
     if (pl.startsWith("bottom")) {
-      top = aRect.bottom + scrollY + MARGIN;
+      top = aRect.bottom + MARGIN;
     } else if (pl.startsWith("top")) {
-      top = aRect.top + scrollY - fHeight - MARGIN;
+      top = aRect.top - fHeight - MARGIN;
     } else if (pl === "right") {
-      top = aRect.top + scrollY + aRect.height / 2 - fHeight / 2;
-      left = aRect.right + scrollX + MARGIN;
+      top = aRect.top + aRect.height / 2 - fHeight / 2;
+      left = aRect.right + MARGIN;
     } else if (pl === "left") {
-      top = aRect.top + scrollY + aRect.height / 2 - fHeight / 2;
-      left = aRect.left + scrollX - fWidth - MARGIN;
+      top = aRect.top + aRect.height / 2 - fHeight / 2;
+      left = aRect.left - fWidth - MARGIN;
     }
 
     // Horizontal alignment (for top / bottom variants)
     if (pl.startsWith("bottom") || pl.startsWith("top")) {
       if (pl.endsWith("start") || pl === "bottom" || pl === "top") {
-        left = aRect.left + scrollX;
+        left = aRect.left;
       } else if (pl.endsWith("end")) {
-        left = aRect.right + scrollX - fWidth;
+        left = aRect.right - fWidth;
       }
     }
 
     // Clamp to viewport with margin
     const clampedLeft = Math.max(
-      MARGIN + scrollX,
-      Math.min(left, vw + scrollX - fWidth - MARGIN),
+      MARGIN,
+      Math.min(left, vw - fWidth - MARGIN),
     );
     const clampedTop = Math.max(
-      MARGIN + scrollY,
-      Math.min(top, vh + scrollY - fHeight - MARGIN),
+      MARGIN,
+      Math.min(top, vh - fHeight - MARGIN),
     );
 
     // Check if the intended (pre-clamped) position fits in viewport
-    const clientTop = top - scrollY;
-    const clientBottom = clientTop + fHeight;
-    const clientLeft = left - scrollX;
-    const clientRight = clientLeft + fWidth;
-
     const fits =
-      clientTop >= 0 &&
-      clientBottom <= vh &&
-      clientLeft >= 0 &&
-      clientRight <= vw;
+      top >= 0 &&
+      top + fHeight <= vh &&
+      left >= 0 &&
+      left + fWidth <= vw;
 
     return { top: clampedTop, left: clampedLeft, fits };
   }

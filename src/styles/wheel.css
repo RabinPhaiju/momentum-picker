@@ -50,7 +50,8 @@
   align-items: flex-end;        /* sheet slides up from bottom */
   justify-content: center;
   opacity: 0;
-  transition: opacity var(--mp-transition-speed) ease;
+  visibility: hidden;
+  transition: opacity var(--mp-transition-speed) ease, visibility var(--mp-transition-speed);
   pointer-events: none;
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
@@ -58,6 +59,7 @@
 
 .mp-overlay.mp-visible {
   opacity: 1;
+  visibility: visible;
   pointer-events: all;
 }
 

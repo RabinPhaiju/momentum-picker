@@ -39,7 +39,8 @@
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity var(--dp-transition);
+  visibility: hidden;
+  transition: opacity var(--dp-transition), visibility var(--dp-transition);
   pointer-events: none;
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
@@ -47,6 +48,7 @@
 
 .dp-overlay.dp-open {
   opacity: 1;
+  visibility: visible;
   pointer-events: all;
 }
 
@@ -511,30 +513,8 @@
   padding: 4px 12px 8px;
 }
 
-/* ── Multi-month layout ──────────────────────────────────────────────────── */
-.dp-multi-wrap {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  gap: 0;
-  scrollbar-width: none;
-}
-.dp-multi-wrap::-webkit-scrollbar { display: none; }
-.dp-multi-wrap .dp-panel--inline {
-  flex: 0 0 auto;
-  min-width: 280px;
-  max-width: 360px;
-  flex: 1;
-  border-right: 1px solid var(--dp-border);
-}
-.dp-multi-wrap .dp-panel--inline:last-child {
-  border-right: none;
-}
 
 /* ── Responsive ───────────────────────────────────────────────────────── */
 @media (max-width: 360px) {
   .dp-panel { width: 100%; border-radius: 0; }
-  .dp-multi-wrap { flex-direction: column; }
-  .dp-multi-wrap .dp-panel--inline { border-right: none; border-bottom: 1px solid var(--dp-border); }
 }
