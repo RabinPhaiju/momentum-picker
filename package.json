@@ -1,5 +1,5 @@
 {
-  "name": "momentum-picker",
+  "name": "@rabinphaiju/momentum-picker",
   "version": "0.1.0",
   "description": "A production-ready iOS-style wheel DateTime picker for the web. Zero dependencies, Vanilla TypeScript.",
   "keywords": [
@@ -14,15 +14,15 @@
     "mobile",
     "typescript"
   ],
-  "author": "",
+  "author": "Rabin Phaiju",
   "license": "MIT",
-  "homepage": "https://github.com/your-org/momentum-picker#readme",
+  "homepage": "https://github.com/RabinPhaiju/momentum-picker/blob/main/README.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/momentum-picker.git"
+    "url": "https://github.com/RabinPhaiju/momentum-picker.git"
   },
   "bugs": {
-    "url": "https://github.com/your-org/momentum-picker/issues"
+    "url": "https://github.com/RabinPhaiju/momentum-picker/issues"
   },
   "main": "./dist/momentum-picker.umd.js",
   "module": "./dist/momentum-picker.es.js",
