@@ -71,7 +71,7 @@
 [data-mp-style="glass"] .mp-columns::before, [data-mp-style="glass"] .mp-columns::after { display: none; }
 
 /* ── Column ───────────────────────────────────────────────────────────────── */
-.mp-column { flex: 1; position: relative; overflow: visible; touch-action: none; cursor: grab; transform-style: preserve-3d; z-index: 1; }
+.mp-column { flex: 1; position: relative; overflow: visible; touch-action: none; cursor: grab; transform-style: preserve-3d; z-index: 1; outline: none; }
 .mp-column:active { cursor: grabbing; }
 .mp-column + .mp-column { border-left: none; }
 

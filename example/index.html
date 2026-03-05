@@ -578,6 +578,47 @@
         </div>
       </section>
 
+      <!-- ── Section 7: Advanced DatePicker Features ── -->
+      <section class="section">
+        <div class="section-title">🆕 Advanced DatePicker Features</div>
+        <div class="grid">
+          <!-- 7a. Range Presets -->
+          <div class="card">
+            <div class="card-title">📅 Range Presets</div>
+            <div id="dp-presets"></div>
+            <div class="result" id="r-presets">
+              Select a preset or pick a range…
+            </div>
+          </div>
+
+          <!-- 7b. Footer Position: Top -->
+          <div class="card">
+            <div class="card-title">⬆️ Footer Position: Top</div>
+            <div id="dp-footer-top"></div>
+            <div class="result" id="r-footer-top">Waiting…</div>
+          </div>
+
+          <!-- 7c. Datetime Seconds -->
+          <div class="card">
+            <div class="card-title">⏱️ Datetime with Seconds</div>
+            <div id="dp-datetime-sec"></div>
+            <div class="result" id="r-datetime-sec">Pick a date + time…</div>
+          </div>
+
+          <!-- 7d. Clipboard Paste -->
+          <div class="card">
+            <div class="card-title">📋 Paste from Clipboard</div>
+            <p style="font-size: 12px; color: var(--text2); margin: 0 0 8px">
+              Copy any date string (e.g. <code>2026-06-15</code> or
+              <code>June 15, 2026</code>), click the calendar below, then press
+              <kbd>Ctrl/Cmd+V</kbd>.
+            </p>
+            <div id="dp-paste"></div>
+            <div class="result" id="r-paste">Waiting for paste…</div>
+          </div>
+        </div>
+      </section>
+
       <!-- ── Section 6: iOS Wheel Picker ── -->
       <section class="section">
         <div class="section-title">🎡 iOS Wheel Picker (MomentumPicker)</div>
@@ -723,47 +764,6 @@
         </div>
       </section>
 
-      <!-- ── Section 7: Advanced DatePicker Features ── -->
-      <section class="section">
-        <div class="section-title">🆕 Advanced DatePicker Features</div>
-        <div class="grid">
-          <!-- 7a. Range Presets -->
-          <div class="card">
-            <div class="card-title">📅 Range Presets</div>
-            <div id="dp-presets"></div>
-            <div class="result" id="r-presets">
-              Select a preset or pick a range…
-            </div>
-          </div>
-
-          <!-- 7b. Footer Position: Top -->
-          <div class="card">
-            <div class="card-title">⬆️ Footer Position: Top</div>
-            <div id="dp-footer-top"></div>
-            <div class="result" id="r-footer-top">Waiting…</div>
-          </div>
-
-          <!-- 7c. Datetime Seconds -->
-          <div class="card">
-            <div class="card-title">⏱️ Datetime with Seconds</div>
-            <div id="dp-datetime-sec"></div>
-            <div class="result" id="r-datetime-sec">Pick a date + time…</div>
-          </div>
-
-          <!-- 7d. Clipboard Paste -->
-          <div class="card">
-            <div class="card-title">📋 Paste from Clipboard</div>
-            <p style="font-size: 12px; color: var(--text2); margin: 0 0 8px">
-              Copy any date string (e.g. <code>2026-06-15</code> or
-              <code>June 15, 2026</code>), click the calendar below, then press
-              <kbd>Ctrl/Cmd+V</kbd>.
-            </p>
-            <div id="dp-paste"></div>
-            <div class="result" id="r-paste">Waiting for paste…</div>
-          </div>
-        </div>
-      </section>
-
       <!-- ── Section 8: Style Showcase ── -->
       <section class="section">
         <div class="section-title">🎨 Style Showcase</div>
@@ -887,7 +887,7 @@
         mode: "range",
         showToday: true,
         showClear: true,
-        disabledDates: (d) => d.getDay() === 0 || d.getDay() === 6,
+        // disabledDates: (d) => d.getDay() === 0 || d.getDay() === 6, // Removed to allow selecting weekends
         format: "YYYY-MM-DD",
         onChange: (v, fmt) => {
           if (Array.isArray(v) && v[0] && v[1]) {

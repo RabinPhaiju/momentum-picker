@@ -162,7 +162,7 @@ export class DatePicker {
     return {
       displayMode: opts.displayMode ?? "inline",
       mode: opts.mode ?? "single",
-      numberOfMonths: 1,
+      numberOfMonths: opts.numberOfMonths ?? 1,
       value: opts.value ?? null,
       open: opts.open ?? false,
       minDate: opts.minDate ?? null,
@@ -234,9 +234,6 @@ export class DatePicker {
 
     this._overlayEl = document.createElement("div");
     this._overlayEl.className = "dp-root";
-    if (this.opts.primaryColor !== "#007aff") {
-      this._overlayEl.style.setProperty("--dp-primary", this.opts.primaryColor);
-    }
     this._overlayEl.dataset.dpTheme = this.opts.theme;
     if (this.opts.className) {
       this.opts.className.split(" ").filter(Boolean).forEach((c) => this._overlayEl!.classList.add(c));
@@ -245,6 +242,7 @@ export class DatePicker {
     if (displayMode === "inline") {
       // Render directly inside container
       const panel = this._buildPanel("dp-panel--inline");
+      this._panelEl = panel;
       this._overlayEl.appendChild(panel);
       this._containerEl!.appendChild(this._overlayEl);
     } else if (displayMode === "modal") {
@@ -281,6 +279,10 @@ export class DatePicker {
     if (displayMode === "popover") {
       this._boundOutsideClick = this._handleOutsideClick.bind(this);
       document.addEventListener("click", this._boundOutsideClick, true);
+    }
+
+    if (this.opts.primaryColor !== "#007aff" && this._panelEl) {
+      this._panelEl.style.setProperty("--dp-primary", this.opts.primaryColor);
     }
 
     // Clipboard paste detection
@@ -406,7 +408,7 @@ export class DatePicker {
     }
     if (partial.primaryColor) {
       this.opts.primaryColor = partial.primaryColor;
-      this._overlayEl?.style.setProperty("--dp-primary", partial.primaryColor);
+      this._panelEl?.style.setProperty("--dp-primary", partial.primaryColor);
     }
     if (partial.minDate !== undefined) this.opts.minDate = partial.minDate ?? null;
     if (partial.maxDate !== undefined) this.opts.maxDate = partial.maxDate ?? null;

@@ -104,8 +104,8 @@ function buildMainRow(this: DatePicker): HTMLElement {
     const btn = document.createElement("button");
     btn.className = "dp-btn dp-btn--ghost";
     btn.type = "button";
-    btn.textContent = "Today";
-    btn.setAttribute("aria-label", "Navigate to today");
+    btn.textContent = "Now";
+    btn.setAttribute("aria-label", "Navigate to now");
     btn.addEventListener("click", () => this._goToToday());
     left.appendChild(btn);
   }
