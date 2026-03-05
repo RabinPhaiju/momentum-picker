@@ -220,7 +220,7 @@ export function buildGrid(this: DatePicker, panelYear = this._viewYear, panelMon
       const wn = document.createElement("div");
       wn.className = "dp-week-num";
       const firstWeekday = week.find((d) => isSameMonth(d, new Date(panelYear, panelMonth)));
-      wn.textContent = `W${getISOWeekNumber(firstWeekday ?? week[0])}`;
+      wn.textContent = String(getISOWeekNumber(firstWeekday ?? week[0]));
 
       // Make week numbers clickable in week mode
       if (mode === "week") {

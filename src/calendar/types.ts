@@ -122,10 +122,13 @@ export interface DatePickerOptions {
   /** Which month/year to initially show in the calendar grid. Defaults to today. */
   defaultViewDate?: Date;
 
-  /** First day of the week: 0=Sun, 1=Mon, 6=Sat. Defaults to 0. */
+  /**
+   * First day of the week: 0=Sunday, 1=Monday, 6=Saturday. Defaults to 0.
+   * Use 0 to start with Sunday, 1 to start with Monday.
+   */
   weekStartsOn?: 0 | 1 | 6;
 
-  /** Show ISO week numbers in the leftmost column. */
+  /** Show ISO week numbers in the leftmost column. Defaults to false. */
   showWeekNumbers?: boolean;
 
   // ── Formatting ─────────────────────────────────────────────────────────────
