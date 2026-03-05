@@ -333,7 +333,6 @@
         </p>
       </header>
 
-      <!-- ── Section 1: Calendar DatePicker (Inline) ── -->
       <section class="section">
         <div class="section-title">📅 Inline Calendar Picker</div>
         <div class="grid">
@@ -351,7 +350,7 @@
           <div class="card">
             <div class="card-title">📏 Date Range</div>
             <div class="card-desc">
-              Click start then end — or drag across days. Weekends disabled.
+              Click start then end — or drag. Weekends disabled.
             </div>
             <div class="inline-wrap" id="dp-range"></div>
             <div class="result" id="r-range">Select a range…</div>
@@ -371,6 +370,19 @@
         </div>
       </section>
 
+      <!-- ── Section 1b: Multi-month Range ── -->
+      <section class="section">
+        <div class="section-title">📅 2-Month Range Picker</div>
+        <div class="card">
+          <div class="card-title">📏 Date Range — 2 Calendars</div>
+          <div class="card-desc">
+            Shows 2 months side by side. Use <code>numberOfMonths: 2</code>.
+          </div>
+          <div class="inline-wrap" id="dp-range2"></div>
+          <div class="result" id="r-range2">Select a range…</div>
+        </div>
+      </section>
+
       <!-- ── Section 2: Picker Mode (Week / Month / Year) ── -->
       <section class="section">
         <div class="section-title">🗓️ Granularity Modes</div>
@@ -378,7 +390,7 @@
           <!-- Week -->
           <div class="card">
             <div class="card-title">📆 Week Picker</div>
-            <div class="card-desc">Select an entire week at once.</div>
+            <div class="card-desc">Select an entire week. Week numbers shown on left — click to select that week too.</div>
             <div class="inline-wrap" id="dp-week"></div>
             <div class="result" id="r-week">Select a week…</div>
           </div>
@@ -387,7 +399,7 @@
           <div class="card">
             <div class="card-title">🗓️ Month Picker</div>
             <div class="card-desc">
-              Select a month — jumps to month view immediately.
+              Opens directly in month view — no day grid shown.
             </div>
             <div class="inline-wrap" id="dp-month"></div>
             <div class="result" id="r-month">Select a month…</div>
@@ -396,7 +408,7 @@
           <!-- Year -->
           <div class="card">
             <div class="card-title">🗓️ Year Picker</div>
-            <div class="card-desc">Select a year — jumps to year panel.</div>
+            <div class="card-desc">Opens directly in year view — no day grid shown.</div>
             <div class="inline-wrap" id="dp-year"></div>
             <div class="result" id="r-year">Select a year…</div>
           </div>
@@ -675,16 +687,42 @@
         displayMode: "inline",
         mode: "week",
         weekStartsOn: 1,
-        showWeekNumbers: true,
+        showWeekNumbers: true,  // week numbers always shown in week mode by default
         showToday: true,
         onChange: (v) => {
           if (v instanceof Date) {
+            const weekNum = Math.ceil((((v - new Date(v.getFullYear(), 0, 1)) / 86400000) + new Date(v.getFullYear(), 0, 1).getDay() + 1) / 7);
             document.getElementById("r-week").innerHTML =
               `Week of <em>${v.toLocaleDateString()}</em>`;
           }
         },
       });
       allDPs.push(dpWeek);
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // 4b. 2-month range picker
+      // ═══════════════════════════════════════════════════════════════════════
+      const dpRange2 = new DatePicker({
+        container: "#dp-range2",
+        displayMode: "inline",
+        mode: "range",
+        numberOfMonths: 2,
+        showToday: true,
+        showClear: true,
+        format: "YYYY-MM-DD",
+        onChange: (v, fmt) => {
+          if (Array.isArray(v) && v[0] && v[1]) {
+            const f = Array.isArray(fmt) ? fmt.join(" → ") : "";
+            document.getElementById("r-range2").innerHTML = `<em>${f}</em>`;
+          } else if (Array.isArray(v) && v[0]) {
+            document.getElementById("r-range2").innerHTML =
+              `Start: <em>${Array.isArray(fmt) ? fmt[0] : ""}</em> — pick end`;
+          } else {
+            document.getElementById("r-range2").textContent = "Select a range…";
+          }
+        },
+      });
+      allDPs.push(dpRange2);
 
       // ═══════════════════════════════════════════════════════════════════════
       // 5. Month Picker

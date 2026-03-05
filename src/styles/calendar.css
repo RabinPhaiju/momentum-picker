@@ -217,10 +217,17 @@
 /* Week number cell */
 .dp-week-num {
   font-size: 10px;
-  color: var(--dp-text-muted);
+  color: var(--dp-primary);
   text-align: center;
-  opacity: 0.5;
+  opacity: 0.6;
   font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.dp-week-num:hover {
+  opacity: 1;
+  background: var(--dp-primary-soft);
+  border-radius: 4px;
 }
 
 /* ── Day Cell ─────────────────────────────────────────────────────────────── */
@@ -504,7 +511,30 @@
   padding: 4px 12px 8px;
 }
 
-/* ── Responsive ───────────────────────────────────────────────────────────── */
+/* ── Multi-month layout ──────────────────────────────────────────────────── */
+.dp-multi-wrap {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 0;
+  scrollbar-width: none;
+}
+.dp-multi-wrap::-webkit-scrollbar { display: none; }
+.dp-multi-wrap .dp-panel--inline {
+  flex: 0 0 auto;
+  min-width: 280px;
+  max-width: 360px;
+  flex: 1;
+  border-right: 1px solid var(--dp-border);
+}
+.dp-multi-wrap .dp-panel--inline:last-child {
+  border-right: none;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
 @media (max-width: 360px) {
   .dp-panel { width: 100%; border-radius: 0; }
+  .dp-multi-wrap { flex-direction: column; }
+  .dp-multi-wrap .dp-panel--inline { border-right: none; border-bottom: 1px solid var(--dp-border); }
 }

@@ -122,6 +122,13 @@ export class WheelColumn {
         li.dataset.index = String(idx);
         li.dataset.copy = String(copy);
         li.textContent = item.label;
+        // Each item is clickable: clicking scrolls the wheel to that item
+        li.style.cursor = "pointer";
+        li.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.scrollToIndex(idx, true);
+          this.onSelect(idx);
+        });
         ul.appendChild(li);
       });
     }
@@ -252,6 +259,7 @@ export class WheelColumn {
       (e: TouchEvent) => {
         this.onDragStart(e.touches[0].clientY);
         e.preventDefault();
+        e.stopPropagation(); // Prevent touch from reaching overlay backdrop
       },
       { passive: false },
     );
@@ -259,10 +267,12 @@ export class WheelColumn {
     el.addEventListener("touchmove", (e: TouchEvent) => {
       this.onDragMove(e.touches[0].clientY);
       e.preventDefault();
+      e.stopPropagation();
     }, { passive: false });
 
     el.addEventListener("touchend", (e: TouchEvent) => {
       this.onDragEnd(e.changedTouches[0].clientY);
+      e.stopPropagation(); // Prevent touch from triggering backdrop click
     });
 
     // ── Mouse Events ──
@@ -462,6 +472,13 @@ export class WheelColumn {
         li.dataset.index = String(idx);
         li.dataset.copy = String(copy);
         li.textContent = item.label;
+        // Each item clickable
+        li.style.cursor = "pointer";
+        li.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.scrollToIndex(idx, true);
+          this.onSelect(idx);
+        });
         ul.appendChild(li);
       });
     }

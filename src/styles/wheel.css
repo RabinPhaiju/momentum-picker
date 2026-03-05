@@ -183,9 +183,14 @@
   flex: 1;
   position: relative;
   overflow: hidden;
-  /* Allow touch scrolling to propagate to our JS handler */
+  /* Prevent touch events from propagating to overlay while scrolling wheel */
   touch-action: none;
   cursor: grab;
+}
+
+.mp-sheet {
+  /* Ensure touch events on the sheet don't reach the backdrop */
+  pointer-events: all;
 }
 
 .mp-column:active { cursor: grabbing; }
@@ -225,7 +230,13 @@
 }
 
 .mp-column-item[aria-selected="false"] {
-  opacity: 0.35;
+  opacity: 0.45;
+  cursor: pointer;
+  transition: opacity 120ms ease;
+}
+
+.mp-column-item[aria-selected="false"]:hover {
+  opacity: 0.75;
 }
 
 /* ── Column label (hidden visually, accessible) ────────────────────────────── */
@@ -249,9 +260,8 @@
   -webkit-user-select: none;
 }
 
-.mp-inline .mp-columns {
-  /* no sheet chrome around it */
-}
+
+
 
 /* ── Responsive tweaks ────────────────────────────────────────────────────── */
 @media (min-width: 480px) {

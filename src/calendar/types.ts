@@ -21,6 +21,9 @@ export type SelectionMode = "single" | "range" | "multiple" | "week" | "month" |
  */
 export type DisplayMode = "inline" | "popover" | "modal";
 
+/** Number of calendar months to render side-by-side (1–6). */
+export type NumberOfMonths = 1 | 2 | 3 | 4 | 5 | 6;
+
 /** Current view (drill-down) inside the calendar panel. */
 export type ViewMode = "day" | "month" | "year";
 
@@ -84,6 +87,12 @@ export interface DatePickerOptions {
 
   /** Selection mode. Defaults to "single". */
   mode?: SelectionMode;
+
+  /**
+   * Number of calendar months to display side by side. Defaults to 1.
+   * Best used with mode "range" or "multiple".
+   */
+  numberOfMonths?: number;
 
   /** Controlled value. */
   value?: PickerValue;
@@ -199,6 +208,7 @@ export interface DatePickerOptions {
 export interface ResolvedDPOptions {
   displayMode: DisplayMode;
   mode: SelectionMode;
+  numberOfMonths: number;
   value: PickerValue;
   open: boolean;
   minDate: Date | null;

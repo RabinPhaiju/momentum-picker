@@ -88,8 +88,13 @@ export class DatePicker {
   private _stopAutoUpdateFn: (() => void) | null = null;
   private _boundKeydown: ((e: KeyboardEvent) => void) | null = null;
   private _boundMouseup: ((e: MouseEvent) => void) | null = null;
+  private _boundOutsideClick: ((e: MouseEvent) => void) | null = null;
 
   private _focusedCellDate: Date | null = null;
+
+  // Multi-month view offsets (for numberOfMonths > 1)
+  private _panels: HTMLDivElement[] = [];
+  private _panelViewOffsets: number[] = []; // month offset from _viewYear/_viewMonth for each panel
 
   // ─────────────────────────────────────────────────────────────────────────────
 
@@ -105,6 +110,15 @@ export class DatePicker {
     this._viewYear = viewDate.getFullYear();
     this._viewMonth = viewDate.getMonth();
     this._decadeStart = Math.floor(this._viewYear / 10) * 10;
+
+    // Set initial view mode based on picker mode
+    if (this.opts.mode === "month") {
+      this._viewMode = "month";
+    } else if (this.opts.mode === "year") {
+      this._viewMode = "year";
+    } else {
+      this._viewMode = "day";
+    }
 
     // Resolve container / anchor
     if (options.container) {
@@ -131,9 +145,11 @@ export class DatePicker {
   // ── Option Resolution ──────────────────────────────────────────────────────
 
   private _resolveOptions(opts: DatePickerOptions): ResolvedDPOptions {
+    const n = opts.numberOfMonths ?? 1;
     return {
       displayMode: opts.displayMode ?? "inline",
       mode: opts.mode ?? "single",
+      numberOfMonths: Math.max(1, Math.min(n, 6)),
       value: opts.value ?? null,
       open: opts.open ?? false,
       minDate: opts.minDate ?? null,
@@ -142,7 +158,7 @@ export class DatePicker {
       disabledRanges: opts.disabledRanges ?? null,
       defaultViewDate: opts.defaultViewDate ?? new Date(),
       weekStartsOn: opts.weekStartsOn ?? 0,
-      showWeekNumbers: opts.showWeekNumbers ?? false,
+      showWeekNumbers: opts.showWeekNumbers ?? (opts.mode === "week" ? true : false),
       format: opts.format ?? null,
       locale: opts.locale ?? (typeof navigator !== "undefined" ? navigator.language : "en-US"),
       showToday: opts.showToday ?? true,
@@ -209,8 +225,20 @@ export class DatePicker {
 
     if (displayMode === "inline") {
       // Render directly inside container
-      const panel = this._buildPanel("dp-panel--inline");
-      this._overlayEl.appendChild(panel);
+      if (this.opts.numberOfMonths > 1) {
+        const wrap = document.createElement("div");
+        wrap.className = "dp-multi-wrap";
+        for (let i = 0; i < this.opts.numberOfMonths; i++) {
+          const panel = this._buildPanel("dp-panel--inline", i);
+          this._panels.push(panel);
+          this._panelViewOffsets.push(i);
+          wrap.appendChild(panel);
+        }
+        this._overlayEl.appendChild(wrap);
+      } else {
+        const panel = this._buildPanel("dp-panel--inline");
+        this._overlayEl.appendChild(panel);
+      }
       this._containerEl!.appendChild(this._overlayEl);
     } else if (displayMode === "modal") {
       // Render centred overlay
@@ -229,6 +257,7 @@ export class DatePicker {
       // Render floating popover anchored to _anchorEl
       const panel = this._buildPanel("dp-panel--popover");
       this._panelEl = panel;
+      panel.style.display = "none";
       this._overlayEl.appendChild(panel);
       document.body.appendChild(this._overlayEl);
     }
@@ -241,49 +270,63 @@ export class DatePicker {
     this._boundMouseup = this._handleGlobalMouseup.bind(this);
     window.addEventListener("mouseup", this._boundMouseup);
 
-    // Popover: close on outside click
+    // Popover: close on outside click (deferred so the triggering click is ignored)
     if (displayMode === "popover") {
-      document.addEventListener("click", this._handleOutsideClick.bind(this), true);
+      this._boundOutsideClick = this._handleOutsideClick.bind(this);
+      document.addEventListener("click", this._boundOutsideClick, true);
     }
   }
 
   // ── Panel Build ────────────────────────────────────────────────────────────
 
-  private _buildPanel(extraClass = ""): HTMLDivElement {
+  private _buildPanel(extraClass = "", monthOffset = 0): HTMLDivElement {
     const panel = document.createElement("div");
     panel.className = ["dp-panel", extraClass].filter(Boolean).join(" ");
     panel.setAttribute("role", "dialog");
     panel.setAttribute("aria-label", "Date Picker");
-    this._renderPanelContent(panel);
+    this._renderPanelContent(panel, monthOffset);
     return panel;
   }
 
   /** Re-renders panel contents in place (header + grid/panel + footer). */
-  private _renderPanelContent(panel: HTMLDivElement): void {
+  private _renderPanelContent(panel: HTMLDivElement, monthOffset = 0): void {
     panel.innerHTML = "";
-    panel.appendChild(this._buildHeader());
+    // For multi-month, compute the actual year/month for this panel
+    const totalMonth = this._viewMonth + monthOffset;
+    const panelYear = this._viewYear + Math.floor(totalMonth / 12);
+    const panelMonth = ((totalMonth % 12) + 12) % 12;
+
+    panel.appendChild(this._buildHeader(panelYear, panelMonth, monthOffset));
 
     if (this._viewMode === "day") {
       panel.appendChild(this._buildWeekdays());
-      panel.appendChild(this._buildGrid());
+      panel.appendChild(this._buildGrid(panelYear, panelMonth));
     } else if (this._viewMode === "month") {
       panel.appendChild(this._buildMonthPanel());
     } else {
       panel.appendChild(this._buildYearPanel());
     }
 
-    if (this._hasFooter()) {
+    // Only show footer on the last panel (or single panel)
+    if (this._hasFooter() && monthOffset === this.opts.numberOfMonths - 1) {
       panel.appendChild(this._buildFooter());
     }
   }
 
   private _refresh(): void {
+    if (this.opts.displayMode === "inline" && this.opts.numberOfMonths > 1) {
+      // Refresh each panel with its own month offset
+      this._panels.forEach((panel, i) => {
+        this._renderPanelContent(panel, this._panelViewOffsets[i]);
+      });
+      return;
+    }
     const panel = this._getPanel();
     if (panel) this._renderPanelContent(panel);
   }
 
   private _getPanel(): HTMLDivElement | null {
-    if (this.opts.displayMode === "inline") {
+    if (this.opts.displayMode === "inline" && this.opts.numberOfMonths <= 1) {
       return this._overlayEl?.querySelector<HTMLDivElement>(".dp-panel") ?? null;
     }
     return this._panelEl;
@@ -291,10 +334,14 @@ export class DatePicker {
 
   // ── Header ─────────────────────────────────────────────────────────────────
 
-  private _buildHeader(): HTMLElement {
+  private _buildHeader(panelYear = this._viewYear, panelMonth = this._viewMonth, panelIndex = 0): HTMLElement {
+    const isMulti = this.opts.numberOfMonths > 1;
+    const isFirst = panelIndex === 0;
+    const isLast = panelIndex === this.opts.numberOfMonths - 1;
+
     // Allow custom renderHeader
     if (this.opts.renderHeader) {
-      const viewDate = new Date(this._viewYear, this._viewMonth, 1);
+      const viewDate = new Date(panelYear, panelMonth, 1);
       const custom = this.opts.renderHeader(viewDate, this._viewMode);
       if (custom) {
         const wrapper = document.createElement("div");
@@ -308,11 +355,12 @@ export class DatePicker {
     const header = document.createElement("div");
     header.className = "dp-header";
 
-    // Prev button
+    // Prev button — only on first panel (or single panel)
     const prevBtn = document.createElement("button");
     prevBtn.className = "dp-header-nav";
     prevBtn.setAttribute("aria-label", this._viewMode === "year" ? "Previous decade" : "Previous month");
     prevBtn.innerHTML = "‹";
+    if (isMulti && !isFirst) prevBtn.style.visibility = "hidden";
     prevBtn.addEventListener("click", () => this._navigatePrev());
     header.appendChild(prevBtn);
 
@@ -324,24 +372,33 @@ export class DatePicker {
       const monthNames = getMonthNames(this.opts.locale);
       const monthBtn = document.createElement("button");
       monthBtn.className = "dp-header-month";
-      monthBtn.textContent = monthNames[this._viewMonth];
-      monthBtn.setAttribute("aria-label", `Select month: ${monthNames[this._viewMonth]}`);
+      monthBtn.textContent = monthNames[panelMonth];
+      monthBtn.setAttribute("aria-label", `Select month: ${monthNames[panelMonth]}`);
       monthBtn.setAttribute("aria-expanded", "false");
-      monthBtn.addEventListener("click", () => {
-        this._viewMode = "month";
-        this._refresh();
-      });
+      // Don't allow drilldown in multi-month mode
+      if (!isMulti) {
+        monthBtn.addEventListener("click", () => {
+          this._viewMode = "month";
+          this._refresh();
+        });
+      } else {
+        monthBtn.style.cursor = "default";
+      }
 
       const yearBtn = document.createElement("button");
       yearBtn.className = "dp-header-year";
-      yearBtn.textContent = String(this._viewYear);
-      yearBtn.setAttribute("aria-label", `Select year: ${this._viewYear}`);
+      yearBtn.textContent = String(panelYear);
+      yearBtn.setAttribute("aria-label", `Select year: ${panelYear}`);
       yearBtn.setAttribute("aria-expanded", "false");
-      yearBtn.addEventListener("click", () => {
-        this._viewMode = "year";
-        this._decadeStart = Math.floor(this._viewYear / 10) * 10;
-        this._refresh();
-      });
+      if (!isMulti) {
+        yearBtn.addEventListener("click", () => {
+          this._viewMode = "year";
+          this._decadeStart = Math.floor(this._viewYear / 10) * 10;
+          this._refresh();
+        });
+      } else {
+        yearBtn.style.cursor = "default";
+      }
 
       title.appendChild(monthBtn);
       title.appendChild(yearBtn);
@@ -350,11 +407,16 @@ export class DatePicker {
       yearBtn.className = "dp-header-year";
       yearBtn.textContent = String(this._viewYear);
       yearBtn.setAttribute("aria-label", `Select year: ${this._viewYear}`);
-      yearBtn.addEventListener("click", () => {
-        this._viewMode = "year";
-        this._decadeStart = Math.floor(this._viewYear / 10) * 10;
-        this._refresh();
-      });
+      // Year picker: clicking year in month view goes to year view
+      if (this.opts.mode !== "month") {
+        yearBtn.addEventListener("click", () => {
+          this._viewMode = "year";
+          this._decadeStart = Math.floor(this._viewYear / 10) * 10;
+          this._refresh();
+        });
+      } else {
+        yearBtn.style.cursor = "default";
+      }
       title.appendChild(yearBtn);
     } else {
       const decadeLabel = document.createElement("span");
@@ -366,11 +428,12 @@ export class DatePicker {
 
     header.appendChild(title);
 
-    // Next button
+    // Next button — only on last panel (or single panel)
     const nextBtn = document.createElement("button");
     nextBtn.className = "dp-header-nav";
     nextBtn.setAttribute("aria-label", this._viewMode === "year" ? "Next decade" : "Next month");
     nextBtn.innerHTML = "›";
+    if (isMulti && !isLast) nextBtn.style.visibility = "hidden";
     nextBtn.addEventListener("click", () => this._navigateNext());
     header.appendChild(nextBtn);
 
@@ -408,13 +471,13 @@ export class DatePicker {
 
   // ── Calendar Grid ─────────────────────────────────────────────────────────
 
-  private _buildGrid(): HTMLElement {
+  private _buildGrid(panelYear = this._viewYear, panelMonth = this._viewMonth): HTMLElement {
     const grid = document.createElement("div");
     grid.className = "dp-grid";
     grid.setAttribute("role", "grid");
-    grid.setAttribute("aria-label", `${this._viewYear}년 ${this._viewMonth + 1}월`);
+    grid.setAttribute("aria-label", `${panelYear}-${panelMonth + 1}`);
 
-    const weeks = generateCalendarGrid(this._viewYear, this._viewMonth, this.opts.weekStartsOn);
+    const weeks = generateCalendarGrid(panelYear, panelMonth, this.opts.weekStartsOn);
     const colClass = this.opts.showWeekNumbers ? "dp-week-row--8" : "dp-week-row--7";
     const { mode } = this.opts;
 
@@ -424,7 +487,8 @@ export class DatePicker {
     if (mode === "range" && Array.isArray(this._value)) {
       const [s, e] = this._value as [Date | null, Date | null];
       rangeStart = s;
-      rangeEnd = e ?? this._rangeHover;
+      // Show hover preview only when start is selected but end is not yet
+      rangeEnd = e ?? (s ? this._rangeHover : null);
     }
 
     // For week mode, determine selected week
@@ -446,11 +510,18 @@ export class DatePicker {
         }
       }
 
-      // Week number
+      // Week number — clickable in week mode
       if (this.opts.showWeekNumbers) {
         const wn = document.createElement("div");
         wn.className = "dp-week-num";
-        wn.textContent = String(getISOWeekNumber(week[0]));
+        wn.textContent = `W${getISOWeekNumber(week[0])}`;
+        if (mode === "week") {
+          wn.style.cursor = "pointer";
+          wn.addEventListener("click", () => {
+            const ws = startOfWeek(week[0], this.opts.weekStartsOn);
+            this._selectDate(ws);
+          });
+        }
         row.appendChild(wn);
       }
 
@@ -458,7 +529,7 @@ export class DatePicker {
         const cell = this._buildDayCell(date, rangeStart, rangeEnd, mode);
         row.appendChild(cell);
 
-        // Week mode: click on row → select whole week
+        // Week mode: click on any day cell → select whole week
         if (mode === "week") {
           cell.addEventListener("click", () => {
             const ws = startOfWeek(date, this.opts.weekStartsOn);
@@ -566,19 +637,24 @@ export class DatePicker {
     cell.tabIndex = isFocused ? 0 : -1;
 
     // Click (handled at row level for week mode)
-    if (mode !== "week" && !isDisabled && !isOutside) {
-      cell.addEventListener("click", () => this._handleDayClick(date));
+    if (mode !== "week" && !isDisabled) {
+      // Allow clicks even on outside dates for range mode to allow full range selection
+      if (!isOutside || mode === "range") {
+        cell.addEventListener("click", () => this._handleDayClick(date));
+      }
       // Hover for range preview
       if (mode === "range") {
         cell.addEventListener("mouseenter", () => {
-          this._rangeHover = date;
-          this._refresh();
-        });
-        cell.addEventListener("mouseleave", () => {
-          // keep hover so drag preview works
+          // Only show hover preview when start is selected but end is not
+          const [s, e] = this._value as [Date | null, Date | null];
+          if (s && !e) {
+            this._rangeHover = date;
+            this._refresh();
+          }
         });
         // Drag-select
         cell.addEventListener("mousedown", (e) => {
+          if (isOutside) return;
           e.preventDefault();
           this._isDragging = true;
           this._rangeAnchor = date;
@@ -868,8 +944,22 @@ export class DatePicker {
     const today = new Date();
     this._viewYear = today.getFullYear();
     this._viewMonth = today.getMonth();
-    this._viewMode = "day";
-    this._refresh();
+    // For single/week/month/year modes, also select today
+    const { mode } = this.opts;
+    if (mode === "single" || mode === "week") {
+      this._viewMode = "day";
+      this._selectDate(today);
+    } else if (mode === "month") {
+      this._viewMode = "month";
+      this._selectDate(today);
+    } else if (mode === "year") {
+      this._viewMode = "year";
+      this._selectDate(today);
+    } else {
+      // range / multiple — just navigate
+      this._viewMode = "day";
+      this._refresh();
+    }
   }
 
   private _clearValue(): void {
@@ -913,6 +1003,15 @@ export class DatePicker {
         },
         "bottom-start" as PopoverPlacement,
       );
+      // Animate in
+      if (animate) {
+        this._panelEl.style.opacity = "0";
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (this._panelEl) this._panelEl.style.opacity = "";
+          });
+        });
+      }
     }
 
     this._open = true;
@@ -1047,9 +1146,14 @@ export class DatePicker {
   private _handleOutsideClick(e: MouseEvent): void {
     if (!this._open) return;
     const target = e.target as Node;
+    // If click is inside the panel, ignore
     if (this._panelEl?.contains(target)) return;
+    // If click is on the anchor element itself, let the anchor's own handler manage toggle
     if (this._anchorEl?.contains(target)) return;
-    this._handleCancel();
+    // Defer so the triggering click (which opens the popover) is not caught immediately
+    setTimeout(() => {
+      if (this._open) this._handleCancel();
+    }, 0);
   }
 
   private _handleCancel(): void {
@@ -1176,9 +1280,11 @@ export class DatePicker {
   destroy(): void {
     if (this._boundKeydown) document.removeEventListener("keydown", this._boundKeydown);
     if (this._boundMouseup) window.removeEventListener("mouseup", this._boundMouseup);
+    if (this._boundOutsideClick) document.removeEventListener("click", this._boundOutsideClick, true);
     this._stopAutoUpdate?.();
     this._overlayEl?.remove();
     this._overlayEl = null;
     this._panelEl = null;
+    this._panels = [];
   }
 }
