@@ -1,0 +1,266 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   styles.css — iOS-like styling for momentum-picker.
+   All values are driven by CSS custom properties so consumers can override
+   them without touching the source.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Design Tokens (default: light theme) ─────────────────────────────────── */
+:root {
+  --mp-primary: #007aff;           /* iOS blue accent */
+  --mp-bg: #ffffff;
+  --mp-surface: #f2f2f7;           /* iOS grouped background */
+  --mp-text: #000000;
+  --mp-text-muted: #9b9b9b;
+  --mp-border: rgba(60, 60, 67, 0.18);
+  --mp-overlay: rgba(0, 0, 0, 0.45);
+  --mp-item-height: 44px;
+  --mp-visible-rows: 5;
+  --mp-border-radius: 16px;
+  --mp-header-height: 52px;
+  --mp-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mp-font-size-item: 20px;
+  --mp-font-size-header: 15px;
+  --mp-font-weight-item: 400;
+  --mp-font-weight-selected: 500;
+  --mp-transition-speed: 200ms;
+  --mp-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.10);
+  --mp-selection-bg: rgba(118, 118, 128, 0.12);
+}
+
+/* ── Dark Theme ───────────────────────────────────────────────────────────── */
+[data-mp-theme="dark"] {
+  --mp-bg: #1c1c1e;
+  --mp-surface: #2c2c2e;
+  --mp-text: #ffffff;
+  --mp-text-muted: #636366;
+  --mp-border: rgba(255, 255, 255, 0.12);
+  --mp-overlay: rgba(0, 0, 0, 0.65);
+  --mp-selection-bg: rgba(255, 255, 255, 0.10);
+  --mp-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Overlay / Backdrop ───────────────────────────────────────────────────── */
+.mp-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--mp-overlay);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;        /* sheet slides up from bottom */
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--mp-transition-speed) ease;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.mp-overlay.mp-visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Picker Sheet ─────────────────────────────────────────────────────────── */
+.mp-sheet {
+  background: var(--mp-bg);
+  border-radius: var(--mp-border-radius) var(--mp-border-radius) 0 0;
+  box-shadow: var(--mp-shadow);
+  width: 100%;
+  max-width: 480px;
+  overflow: hidden;
+  transform: translateY(100%);
+  transition: transform var(--mp-transition-speed) cubic-bezier(0.32, 0.72, 0, 1);
+  font-family: var(--mp-font-family);
+  /* Prevent iOS bounce on the sheet itself */
+  overscroll-behavior: contain;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.mp-overlay.mp-visible .mp-sheet {
+  transform: translateY(0);
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+.mp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--mp-header-height);
+  padding: 0 16px;
+  border-bottom: 1px solid var(--mp-border);
+}
+
+.mp-header-title {
+  font-size: var(--mp-font-size-header);
+  font-weight: 600;
+  color: var(--mp-text);
+  flex: 1;
+  text-align: center;
+}
+
+.mp-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--mp-font-size-header);
+  padding: 8px 4px;
+  min-width: 64px;
+  font-family: inherit;
+  transition: opacity var(--mp-transition-speed);
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 8px;
+}
+
+.mp-btn:hover { opacity: 0.7; }
+.mp-btn:active { opacity: 0.5; }
+.mp-btn:focus-visible {
+  outline: 2px solid var(--mp-primary);
+  outline-offset: 2px;
+}
+
+.mp-btn-cancel {
+  color: var(--mp-text-muted);
+  text-align: left;
+}
+
+.mp-btn-confirm {
+  color: var(--mp-primary);
+  font-weight: 600;
+  text-align: right;
+}
+
+/* ── Columns Container ────────────────────────────────────────────────────── */
+.mp-columns {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+  /* total visible height = rows × item-height */
+  height: calc(var(--mp-visible-rows) * var(--mp-item-height));
+  overflow: hidden;
+}
+
+/* ── Selection Indicator (the "magnifying" band in the middle) ─────────────── */
+.mp-selection-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* centre the band vertically within the columns area */
+  top: calc(50% - var(--mp-item-height) / 2);
+  height: var(--mp-item-height);
+  background: var(--mp-selection-bg);
+  border-top: 1px solid var(--mp-border);
+  border-bottom: 1px solid var(--mp-border);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ── Gradient Fade — top & bottom ─────────────────────────────────────────── */
+.mp-columns::before,
+.mp-columns::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: calc(var(--mp-visible-rows) * var(--mp-item-height) / 2 - var(--mp-item-height) / 2);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.mp-columns::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--mp-bg) 0%, transparent 100%);
+}
+
+.mp-columns::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--mp-bg) 0%, transparent 100%);
+}
+
+/* ── Individual Wheel Column ──────────────────────────────────────────────── */
+.mp-column {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  /* Allow touch scrolling to propagate to our JS handler */
+  touch-action: none;
+  cursor: grab;
+}
+
+.mp-column:active { cursor: grabbing; }
+
+/* Separator between adjacent columns */
+.mp-column + .mp-column {
+  border-left: 1px solid var(--mp-border);
+}
+
+/* ── Item List ────────────────────────────────────────────────────────────── */
+.mp-column-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  /* Will be transformed via translateY by JS */
+  will-change: transform;
+  transition: none; /* JS controls transitions */
+}
+
+/* ── Single Item ──────────────────────────────────────────────────────────── */
+.mp-column-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--mp-item-height);
+  font-size: var(--mp-font-size-item);
+  font-weight: var(--mp-font-weight-item);
+  color: var(--mp-text);
+  transition: color 150ms ease, font-weight 150ms ease;
+  white-space: nowrap;
+  /* ARIA selected items highlighted */
+}
+
+.mp-column-item[aria-selected="true"] {
+  color: var(--mp-text);
+  font-weight: var(--mp-font-weight-selected);
+}
+
+.mp-column-item[aria-selected="false"] {
+  opacity: 0.35;
+}
+
+/* ── Column label (hidden visually, accessible) ────────────────────────────── */
+.mp-column-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+/* ── Inline / Embedded mode (no overlay/sheet chrome) ─────────────────────── */
+.mp-inline {
+  font-family: var(--mp-font-family);
+  background: var(--mp-bg);
+  border-radius: var(--mp-border-radius);
+  border: 1px solid var(--mp-border);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.mp-inline .mp-columns {
+  /* no sheet chrome around it */
+}
+
+/* ── Responsive tweaks ────────────────────────────────────────────────────── */
+@media (min-width: 480px) {
+  .mp-sheet {
+    border-radius: var(--mp-border-radius);
+    margin-bottom: 24px;
+  }
+
+  .mp-overlay {
+    align-items: center;
+  }
+}

@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>momentum-picker — iOS Wheel DateTime Picker Demo</title>
+    <meta
+      name="description"
+      content="Demo of momentum-picker: a smooth, iOS-style wheel datetime picker for the web."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ── Demo page styles ─────────────────────────────────── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --page-bg: #f2f2f7;
+        --card-bg: #ffffff;
+        --text: #1c1c1e;
+        --text-secondary: #8e8e93;
+        --accent: #007aff;
+        --border: rgba(60, 60, 67, 0.12);
+        --radius: 16px;
+        --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      body.dark {
+        --page-bg: #000000;
+        --card-bg: #1c1c1e;
+        --text: #ffffff;
+        --text-secondary: #636366;
+        --border: rgba(255, 255, 255, 0.08);
+      }
+
+      body {
+        font-family: var(--font);
+        background: var(--page-bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 24px 16px 80px;
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+
+      .header {
+        max-width: 600px;
+        margin: 0 auto 40px;
+        text-align: center;
+      }
+
+      .badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #007aff, #5e5ce6);
+        color: white;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 20px;
+        letter-spacing: 0.5px;
+        margin-bottom: 16px;
+      }
+
+      h1 {
+        font-size: 36px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, var(--text), var(--text-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .subtitle {
+        color: var(--text-secondary);
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      .controls {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        display: flex;
+        gap: 8px;
+        z-index: 9999;
+      }
+
+      .icon-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.15s;
+      }
+
+      .icon-btn:hover {
+        transform: scale(1.1);
+      }
+
+      /* ── Card Grid ─────────────────────────────────────────── */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      .card {
+        background: var(--card-bg);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        padding: 24px;
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      }
+
+      .card-icon {
+        font-size: 32px;
+        margin-bottom: 12px;
+      }
+
+      .card-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+
+      .card-desc {
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 20px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--accent);
+        color: white;
+        font-family: var(--font);
+        font-size: 15px;
+        font-weight: 600;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 12px;
+        cursor: pointer;
+        width: 100%;
+        justify-content: center;
+        transition:
+          opacity 0.15s,
+          transform 0.15s;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .btn:hover {
+        opacity: 0.85;
+      }
+
+      .btn:active {
+        transform: scale(0.98);
+        opacity: 0.75;
+      }
+
+      .btn.btn-outline {
+        background: transparent;
+        border: 1.5px solid var(--accent);
+        color: var(--accent);
+      }
+
+      .result-box {
+        margin-top: 16px;
+        background: var(--page-bg);
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: var(--text-secondary);
+        min-height: 42px;
+        font-family: "SF Mono", "Fira Code", monospace;
+        border: 1px solid var(--border);
+        transition: background 0.3s;
+        word-break: break-all;
+      }
+
+      .result-box span {
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      /* ── Custom colour demo ──────────────────────────────────── */
+      .color-swatches {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+
+      .swatch {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 3px solid transparent;
+        transition:
+          transform 0.15s,
+          border-color 0.15s;
+      }
+
+      .swatch.active {
+        border-color: var(--text);
+        transform: scale(1.2);
+      }
+
+      /* ── Footer ─────────────────────────────────────────────── */
+      footer {
+        text-align: center;
+        margin-top: 60px;
+        color: var(--text-secondary);
+        font-size: 14px;
+      }
+
+      footer a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body id="page-body">
+    <!-- Controls: theme toggle -->
+    <div class="controls">
+      <button
+        class="icon-btn"
+        id="theme-toggle"
+        aria-label="Toggle dark mode"
+        title="Toggle theme"
+      >
+        🌙
+      </button>
+    </div>
+
+    <!-- Hero Header -->
+    <header class="header">
+      <div class="badge">momentum-picker v0.1.0</div>
+      <h1>iOS Wheel DateTime Picker</h1>
+      <p class="subtitle">
+        Smooth momentum scrolling · Infinite wheel · Touch &amp; mouse · Fully
+        accessible · Zero dependencies
+      </p>
+    </header>
+
+    <!-- Demo Cards -->
+    <main class="grid" id="app">
+      <!-- Date Mode -->
+      <div class="card">
+        <div class="card-icon">📅</div>
+        <div class="card-title">Date Picker</div>
+        <div class="card-desc">
+          Year · Month · Day columns. Locale-aware month names.
+        </div>
+        <button class="btn" id="open-date" aria-label="Open Date Picker">
+          📅 Pick a Date
+        </button>
+        <div class="result-box" id="result-date">Waiting for selection…</div>
+      </div>
+
+      <!-- Time Mode -->
+      <div class="card">
+        <div class="card-icon">⏰</div>
+        <div class="card-title">Time Picker</div>
+        <div class="card-desc">
+          Hour · Minute columns with configurable step (5 min here).
+        </div>
+        <button class="btn" id="open-time" aria-label="Open Time Picker">
+          ⏰ Pick a Time
+        </button>
+        <div class="result-box" id="result-time">Waiting for selection…</div>
+      </div>
+
+      <!-- DateTime Mode -->
+      <div class="card">
+        <div class="card-icon">📆</div>
+        <div class="card-title">DateTime Picker</div>
+        <div class="card-desc">
+          All five columns. Formatted output with YYYY-MM-DD HH:mm.
+        </div>
+        <button
+          class="btn"
+          id="open-datetime"
+          aria-label="Open DateTime Picker"
+        >
+          📆 Pick Date &amp; Time
+        </button>
+        <div class="result-box" id="result-datetime">
+          Waiting for selection…
+        </div>
+      </div>
+
+      <!-- Custom Theme / Color -->
+      <div class="card">
+        <div class="card-icon">🎨</div>
+        <div class="card-title">Custom Accent Color</div>
+        <div class="card-desc">Pick a color then open the picker.</div>
+        <div class="color-swatches" id="swatches">
+          <div
+            class="swatch active"
+            data-color="#007aff"
+            style="background: #007aff"
+            title="iOS Blue"
+          ></div>
+          <div
+            class="swatch"
+            data-color="#34c759"
+            style="background: #34c759"
+            title="iOS Green"
+          ></div>
+          <div
+            class="swatch"
+            data-color="#ff9500"
+            style="background: #ff9500"
+            title="iOS Orange"
+          ></div>
+          <div
+            class="swatch"
+            data-color="#ff3b30"
+            style="background: #ff3b30"
+            title="iOS Red"
+          ></div>
+          <div
+            class="swatch"
+            data-color="#af52de"
+            style="background: #af52de"
+            title="iOS Purple"
+          ></div>
+          <div
+            class="swatch"
+            data-color="#ff2d55"
+            style="background: #ff2d55"
+            title="iOS Pink"
+          ></div>
+        </div>
+        <button
+          class="btn btn-outline"
+          id="open-custom"
+          aria-label="Open Picker with Custom Color"
+        >
+          🎨 Open with Custom Color
+        </button>
+        <div class="result-box" id="result-custom">Waiting for selection…</div>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        Built with
+        <a href="https://github.com/your-org/momentum-picker"
+          >momentum-picker</a
+        >
+        · Vanilla TypeScript · No dependencies
+      </p>
+    </footer>
+
+    <!-- Import the library:
+         In dev mode (npm run dev) → Vite resolves ../src/index.ts and injects styles.
+         In production (after npm run build) → swap to ../dist/momentum-picker.es.js -->
+    <link rel="stylesheet" href="../dist/style.css" />
+    <script type="module">
+      import MomentumPicker from "../src/index.ts";
+
+      // ──────────────────────────────────────────────────────
+      // Helper: detect current page theme
+      // ──────────────────────────────────────────────────────
+      const body = document.getElementById("page-body");
+      const themeToggle = document.getElementById("theme-toggle");
+      let isDark = false;
+
+      themeToggle.addEventListener("click", () => {
+        isDark = !isDark;
+        body.classList.toggle("dark", isDark);
+        themeToggle.textContent = isDark ? "☀️" : "🌙";
+        // Propagate theme to open pickers handled in each picker's setOptions
+        [datePicker, timePicker, datetimePicker, customPicker].forEach((p) =>
+          p.setOptions({ theme: isDark ? "dark" : "light" }),
+        );
+      });
+
+      // ──────────────────────────────────────────────────────
+      // 1. Date-only picker
+      // ──────────────────────────────────────────────────────
+      const datePicker = new MomentumPicker({
+        container: "#app",
+        mode: "date",
+        value: new Date(),
+        format: "YYYY-MM-DD",
+        locale: "en-US",
+        onChange: (date, formatted) => {
+          document.getElementById("result-date").innerHTML =
+            `onChange → <span>${formatted ?? date.toDateString()}</span>`;
+        },
+        onConfirm: (date, formatted) => {
+          document.getElementById("result-date").innerHTML =
+            `✅ Confirmed → <span>${formatted ?? date.toDateString()}</span>`;
+        },
+        onCancel: () => {
+          document.getElementById("result-date").innerHTML = "❌ Cancelled";
+        },
+      });
+
+      document
+        .getElementById("open-date")
+        .addEventListener("click", () => datePicker.show());
+
+      // ──────────────────────────────────────────────────────
+      // 2. Time-only picker (5-minute step)
+      // ──────────────────────────────────────────────────────
+      const timePicker = new MomentumPicker({
+        container: "#app",
+        mode: "time",
+        value: new Date(),
+        minuteStep: 5,
+        format: "HH:mm",
+        onChange: (_date, formatted) => {
+          document.getElementById("result-time").innerHTML =
+            `onChange → <span>${formatted}</span>`;
+        },
+        onConfirm: (_date, formatted) => {
+          document.getElementById("result-time").innerHTML =
+            `✅ Confirmed → <span>${formatted}</span>`;
+        },
+        onCancel: () => {
+          document.getElementById("result-time").innerHTML = "❌ Cancelled";
+        },
+      });
+
+      document
+        .getElementById("open-time")
+        .addEventListener("click", () => timePicker.show());
+
+      // ──────────────────────────────────────────────────────
+      // 3. Full DateTime picker
+      // ──────────────────────────────────────────────────────
+      const datetimePicker = new MomentumPicker({
+        container: "#app",
+        mode: "datetime",
+        value: new Date(),
+        format: "YYYY-MM-DD HH:mm",
+        onChange: (_date, formatted) => {
+          document.getElementById("result-datetime").innerHTML =
+            `onChange → <span>${formatted}</span>`;
+        },
+        onConfirm: (_date, formatted) => {
+          document.getElementById("result-datetime").innerHTML =
+            `✅ Confirmed → <span>${formatted}</span>`;
+        },
+        onCancel: () => {
+          document.getElementById("result-datetime").innerHTML = "❌ Cancelled";
+        },
+      });
+
+      document
+        .getElementById("open-datetime")
+        .addEventListener("click", () => datetimePicker.show());
+
+      // ──────────────────────────────────────────────────────
+      // 4. Custom colour picker
+      // ──────────────────────────────────────────────────────
+      let currentColor = "#007aff";
+
+      document.getElementById("swatches").addEventListener("click", (e) => {
+        const swatch = e.target.closest(".swatch");
+        if (!swatch) return;
+        document
+          .querySelectorAll(".swatch")
+          .forEach((s) => s.classList.remove("active"));
+        swatch.classList.add("active");
+        currentColor = swatch.dataset.color;
+        customPicker.setOptions({ primaryColor: currentColor });
+      });
+
+      const customPicker = new MomentumPicker({
+        container: "#app",
+        mode: "datetime",
+        value: new Date(),
+        primaryColor: currentColor,
+        itemHeight: 48,
+        visibleRows: 5,
+        onChange: (_date, _f) => {
+          document.getElementById("result-custom").innerHTML =
+            `onChange → <span style="color:${currentColor}">${_date.toLocaleString()}</span>`;
+        },
+        onConfirm: (date) => {
+          document.getElementById("result-custom").innerHTML =
+            `✅ Confirmed → <span style="color:${currentColor}">${date.toLocaleString()}</span>`;
+        },
+        onCancel: () => {
+          document.getElementById("result-custom").innerHTML = "❌ Cancelled";
+        },
+      });
+
+      document
+        .getElementById("open-custom")
+        .addEventListener("click", () => customPicker.show());
+    </script>
+  </body>
+</html>

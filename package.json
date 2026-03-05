@@ -1,0 +1,58 @@
+{
+  "name": "momentum-picker",
+  "version": "0.1.0",
+  "description": "A production-ready iOS-style wheel DateTime picker for the web. Zero dependencies, Vanilla TypeScript.",
+  "keywords": [
+    "ios",
+    "datetime",
+    "picker",
+    "wheel",
+    "scroll",
+    "momentum",
+    "date",
+    "time",
+    "mobile",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "homepage": "https://github.com/your-org/momentum-picker#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/momentum-picker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/momentum-picker/issues"
+  },
+  "main": "./dist/momentum-picker.umd.js",
+  "module": "./dist/momentum-picker.es.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/momentum-picker.es.js",
+      "require": "./dist/momentum-picker.umd.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "scripts": {
+    "dev": "vite example",
+    "build": "vite build && tsc --emitDeclarationOnly --outDir dist/types",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist/types",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11",
+    "vite-plugin-dts": "^3.9.1"
+  }
+}
