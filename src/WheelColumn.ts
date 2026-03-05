@@ -40,6 +40,7 @@ export class WheelColumn {
   private list: HTMLUListElement;
   private items: ColumnItem[];
   private itemHeight: number;
+  private is3D: boolean;
 
   // ── State ───────────────────────────────────────────────────────────────────
   private selectedIndex: number; // index into the ORIGINAL items array
@@ -71,11 +72,12 @@ export class WheelColumn {
 
   // ── Constructor ─────────────────────────────────────────────────────────────
 
-  constructor(def: ColumnDef, itemHeight: number, visibleRows: number) {
+  constructor(def: ColumnDef, itemHeight: number, visibleRows: number, is3D: boolean = true) {
     this.items = def.items;
     this.itemHeight = itemHeight;
     this.selectedIndex = def.selectedIndex;
     this.onSelect = def.onSelect;
+    this.is3D = is3D;
 
     // Build DOM
     this.el = this.createColumnEl(def, visibleRows);
@@ -178,6 +180,46 @@ export class WheelColumn {
       this.list.style.transition = "none";
     }
     this.list.style.transform = `translateY(${offset}px)`;
+
+    // Update individual item 3D rotations if enabled
+    if (this.is3D) {
+      this.updateItemTransforms(offset);
+    }
+  }
+
+  /**
+   * Applies 3D rotation and opacity to each item based on its position
+   * relative to the center of the wheel.
+   */
+  private updateItemTransforms(offset: number): void {
+    const items = this.list.children;
+    const centerOffset = -offset;
+    const visibleRows = parseInt(this.el.style.getPropertyValue("--mp-visible-rows") || "5", 10);
+    
+    // Radius of the virtual cylinder
+    const radius = (this.itemHeight * (visibleRows / 2)); 
+    
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i] as HTMLLIElement;
+      const itemTop = i * this.itemHeight;
+      const distanceFromCenter = itemTop - centerOffset;
+      
+      const angle = distanceFromCenter / radius;
+      
+      // Threshold for visibility (roughly visibleRows/2 + 1)
+      if (Math.abs(distanceFromCenter) < this.itemHeight * (visibleRows / 2 + 1.5)) {
+        const rotateX = -angle * (180 / Math.PI); // convert to degrees
+        const opacity = Math.max(0, 1 - Math.pow(Math.abs(distanceFromCenter) / (this.itemHeight * (visibleRows / 2 + 0.5)), 2));
+        const scale = 1 - Math.abs(distanceFromCenter) / (this.itemHeight * 12);
+        
+        const z = Math.cos(angle) * radius - radius;
+        
+        item.style.transform = `rotateX(${rotateX}deg) translateZ(${z}px) scale(${scale})`;
+        item.style.opacity = String(opacity);
+      } else {
+        item.style.opacity = "0";
+      }
+    }
   }
 
   /**
@@ -549,6 +591,23 @@ export class WheelColumn {
   /** Currently selected index. */
   getSelectedIndex(): number {
     return this.selectedIndex;
+  }
+
+  /** Toggle the 3D cylinder effect at runtime. */
+  setIs3D(is3D: boolean): void {
+    this.is3D = is3D;
+    if (!is3D) {
+      // Clear 3D styles from all items
+      const items = this.list.children;
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i] as HTMLLIElement;
+        item.style.transform = "";
+        item.style.opacity = "";
+      }
+    } else {
+      // Re-apply transforms for current offset
+      this.applyTransform(this.currentOffset, false);
+    }
   }
 
   /** Clean up event listeners and DOM. */

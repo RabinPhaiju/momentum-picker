@@ -321,6 +321,14 @@
       >
         🌙
       </button>
+      <button
+        class="icon-btn"
+        id="d3-toggle"
+        title="Toggle 3D Wheel"
+        style="font-size: 14px; font-weight: 800"
+      >
+        3D
+      </button>
     </div>
 
     <div class="page">
@@ -571,7 +579,7 @@
           <div class="card">
             <div class="card-title">📅 Date Wheel</div>
             <div class="card-desc">
-              Year · Month · Day columns. Feb bug fixed!
+              Year · Month · Day columns. 3D cylindrical effect!
             </div>
             <button class="btn" id="open-wheel-date">📅 Open Wheel Date</button>
             <div class="result" id="r-wheel-date">Waiting…</div>
@@ -592,6 +600,128 @@
             </button>
             <div class="result" id="r-wheel-dt">Waiting…</div>
           </div>
+
+          <!-- Inline / Popover Tests -->
+          <div
+            class="card"
+            style="grid-column: 1 / -1; display: flex; flex-direction: column"
+          >
+            <div class="card-title">📝 Inline Display Mode</div>
+            <div class="card-desc">
+              Permanently visible inside a container without an overlay
+              backdrop. Since there is no "Done" button, it updates live.
+            </div>
+
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 20px;
+                margin-top: 15px;
+              "
+            >
+              <div>
+                <strong>Date Inline</strong>
+                <div
+                  id="inline-date-mount"
+                  style="
+                    max-height: 250px;
+                    margin: 10px 0;
+                    border: 1px dashed var(--mp-border);
+                    border-radius: 8px;
+                  "
+                ></div>
+                <div class="result" id="r-inline-date">Waiting…</div>
+              </div>
+              <div>
+                <strong>Time Inline</strong>
+                <div
+                  id="inline-time-mount"
+                  style="
+                    max-height: 250px;
+                    margin: 10px 0;
+                    border: 1px dashed var(--mp-border);
+                    border-radius: 8px;
+                  "
+                ></div>
+                <div class="result" id="r-inline-time">Waiting…</div>
+              </div>
+              <div>
+                <strong>DateTime Inline</strong>
+                <div
+                  id="inline-dt-mount"
+                  style="
+                    max-height: 250px;
+                    margin: 10px 0;
+                    border: 1px dashed var(--mp-border);
+                    border-radius: 8px;
+                  "
+                ></div>
+                <div class="result" id="r-inline-dt">Waiting…</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="grid-column: 1 / -1">
+            <div class="card-title">🎈 Popover Display Mode</div>
+            <div class="card-desc">
+              Anchored directly to a trigger element with smart positioning.
+            </div>
+
+            <div
+              style="
+                display: flex;
+                gap: 15px;
+                flex-wrap: wrap;
+                margin-top: 15px;
+              "
+            >
+              <div>
+                <button
+                  class="btn"
+                  id="open-popover-date"
+                  style="background: var(--primary)"
+                >
+                  🎈 Date Popover
+                </button>
+                <div class="result" id="r-popover-date" style="margin-top: 8px">
+                  Waiting…
+                </div>
+              </div>
+              <div>
+                <button
+                  class="btn"
+                  id="open-popover-time"
+                  style="background: var(--primary)"
+                >
+                  🎈 Time Popover
+                </button>
+                <div class="result" id="r-popover-time" style="margin-top: 8px">
+                  Waiting…
+                </div>
+              </div>
+              <div>
+                <button
+                  class="btn"
+                  id="open-popover-dt"
+                  style="background: var(--primary)"
+                >
+                  🎈 DateTime Popover
+                </button>
+                <div class="result" id="r-popover-dt" style="margin-top: 8px">
+                  Waiting…
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 7: Style Showcase ── -->
+      <section class="section">
+        <div class="section-title">🎨 Style Showcase</div>
+        <div class="grid" id="style-grid">
+          <!-- Dynamic cards will be injected by JS -->
         </div>
       </section>
     </div>
@@ -612,14 +742,27 @@
       // ── Theme toggle ──────────────────────────────────────────────────────
       const body = document.getElementById("body");
       const themeBtn = document.getElementById("theme-toggle");
+      const d3Btn = document.getElementById("d3-toggle");
       let dark = false;
+      let is3D = true;
       const allDPs = [];
+      const allWheels = [];
 
       themeBtn.addEventListener("click", () => {
         dark = !dark;
         body.classList.toggle("dark", dark);
         themeBtn.textContent = dark ? "☀️" : "🌙";
         allDPs.forEach((p) => p.setOptions({ theme: dark ? "dark" : "light" }));
+        allWheels.forEach((w) =>
+          w.setOptions({ theme: dark ? "dark" : "light" }),
+        );
+      });
+
+      d3Btn.addEventListener("click", () => {
+        is3D = !is3D;
+        d3Btn.textContent = is3D ? "3D" : "2D";
+        d3Btn.style.color = is3D ? "var(--accent)" : "var(--text2)";
+        allWheels.forEach((w) => w.setOptions({ is3D }));
       });
 
       // ═══════════════════════════════════════════════════════════════════════
@@ -1003,6 +1146,7 @@
       document
         .getElementById("open-wheel-date")
         .addEventListener("click", () => wheelDate.show());
+      allWheels.push(wheelDate);
 
       const wheelTime = new MomentumPicker({
         container: "#modal-mount",
@@ -1020,6 +1164,7 @@
       document
         .getElementById("open-wheel-time")
         .addEventListener("click", () => wheelTime.show());
+      allWheels.push(wheelTime);
 
       const wheelDT = new MomentumPicker({
         container: "#modal-mount",
@@ -1036,6 +1181,151 @@
       document
         .getElementById("open-wheel-dt")
         .addEventListener("click", () => wheelDT.show());
+      allWheels.push(wheelDT);
+
+      // 13b. Wheel Inline (Date, Time, DateTime)
+      const inlineDate = new MomentumPicker({
+        container: "#inline-date-mount",
+        displayMode: "inline",
+        mode: "date",
+        format: "YYYY-MM-DD",
+        onChange: (_, fmt) => {
+          document.getElementById("r-inline-date").innerHTML =
+            `Live: <em>${fmt}</em>`;
+        },
+      });
+      inlineDate.show();
+      allWheels.push(inlineDate);
+
+      const inlineTime = new MomentumPicker({
+        container: "#inline-time-mount",
+        displayMode: "inline",
+        mode: "time",
+        format: "HH:mm",
+        onChange: (_, fmt) => {
+          document.getElementById("r-inline-time").innerHTML =
+            `Live: <em>${fmt}</em>`;
+        },
+      });
+      inlineTime.show();
+      allWheels.push(inlineTime);
+
+      const inlineDT = new MomentumPicker({
+        container: "#inline-dt-mount",
+        displayMode: "inline",
+        mode: "datetime",
+        format: "YYYY-MM-DD HH:mm",
+        onChange: (_, fmt) => {
+          document.getElementById("r-inline-dt").innerHTML =
+            `Live: <em>${fmt}</em>`;
+        },
+      });
+      inlineDT.show();
+      allWheels.push(inlineDT);
+
+      // 13c. Wheel Popovers (Date, Time, DateTime)
+      const popoverDate = new MomentumPicker({
+        anchor: "#open-popover-date",
+        displayMode: "popover",
+        mode: "date",
+        format: "YYYY-MM-DD",
+        onConfirm: (_, fmt) => {
+          document.getElementById("r-popover-date").innerHTML =
+            `✅ <em>${fmt}</em>`;
+        },
+      });
+      document
+        .getElementById("open-popover-date")
+        .addEventListener("click", (e) => {
+          e.stopPropagation();
+          popoverDate.toggle();
+        });
+      allWheels.push(popoverDate);
+
+      const popoverTime = new MomentumPicker({
+        anchor: "#open-popover-time",
+        displayMode: "popover",
+        mode: "time",
+        format: "HH:mm",
+        onConfirm: (_, fmt) => {
+          document.getElementById("r-popover-time").innerHTML =
+            `✅ <em>${fmt}</em>`;
+        },
+      });
+      document
+        .getElementById("open-popover-time")
+        .addEventListener("click", (e) => {
+          e.stopPropagation();
+          popoverTime.toggle();
+        });
+      allWheels.push(popoverTime);
+
+      const popoverDT = new MomentumPicker({
+        anchor: "#open-popover-dt",
+        displayMode: "popover",
+        mode: "datetime",
+        format: "YYYY-MM-DD HH:mm",
+        onConfirm: (_, fmt) => {
+          document.getElementById("r-popover-dt").innerHTML =
+            `✅ <em>${fmt}</em>`;
+        },
+      });
+      document
+        .getElementById("open-popover-dt")
+        .addEventListener("click", (e) => {
+          e.stopPropagation();
+          popoverDT.toggle();
+        });
+      allWheels.push(popoverDT);
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // 14. Style Showcase (Dynamic)
+      // ═══════════════════════════════════════════════════════════════════════
+      const styles = [
+        "neumorphism",
+        "brutalist",
+        "retro",
+        "gradient",
+        "pastel",
+        "vibrant",
+        "frosted",
+        "elevated",
+        "material",
+        "ios",
+        "macos",
+        "bootstrap",
+        "tailwind",
+        "chakra",
+        "ant",
+      ];
+
+      const styleGrid = document.getElementById("style-grid");
+      styles.forEach((style) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="card-title" style="text-transform: capitalize">${style}</div>
+          <button class="btn" id="open-${style}">${style} Picker</button>
+          <div class="result" id="r-${style}">Waiting…</div>
+        `;
+        styleGrid.appendChild(card);
+
+        const picker = new MomentumPicker({
+          container: "#modal-mount",
+          style: style,
+          mode: "datetime",
+          format: "YYYY-MM-DD HH:mm",
+          onConfirm: (_, fmt) => {
+            document.getElementById(`r-${style}`).innerHTML =
+              `✅ <em>${fmt}</em>`;
+          },
+        });
+
+        document
+          .getElementById(`open-${style}`)
+          .addEventListener("click", () => picker.show());
+        allWheels.push(picker);
+      });
     </script>
   </body>
 </html>

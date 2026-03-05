@@ -12,9 +12,38 @@
 export type PickerMode = "date" | "time" | "datetime";
 
 /**
- * Visual theme of the picker.
+ * How the picker is presented.
+ * - "inline"  → rendered directly inside a container element
+ * - "popover" → floated panel anchored to a trigger element
+ * - "modal"   → centred overlay dialog
+ */
+export type DisplayMode = "inline" | "popover" | "modal";
+
+/**
+ * Visual color theme of the picker.
  */
 export type PickerTheme = "light" | "dark";
+
+/**
+ * Visual style variation of the picker.
+ */
+export type PickerStyle =
+  | "default"
+  | "neumorphism"
+  | "brutalist"
+  | "retro"
+  | "gradient"
+  | "pastel"
+  | "vibrant"
+  | "frosted"
+  | "elevated"
+  | "material"
+  | "ios"
+  | "macos"
+  | "bootstrap"
+  | "tailwind"
+  | "chakra"
+  | "ant";
 
 /**
  * Full options accepted by MomentumPicker constructor.
@@ -22,9 +51,21 @@ export type PickerTheme = "light" | "dark";
 export interface PickerOptions {
   /**
    * CSS selector string or an HTMLElement to mount the picker into.
+   * Required for "inline" and "modal" modes.
    * @example "#app" | document.getElementById("app")
    */
-  container: string | HTMLElement;
+  container?: string | HTMLElement;
+
+  /**
+   * Trigger / anchor element for "popover" mode.
+   * The popover floats relative to this element.
+   */
+  anchor?: string | HTMLElement;
+
+  /**
+   * How the picker is presented. Defaults to "modal".
+   */
+  displayMode?: DisplayMode;
 
   /**
    * Picker mode. Defaults to "datetime".
@@ -71,6 +112,15 @@ export interface PickerOptions {
   theme?: PickerTheme;
 
   /**
+   * Style variation. Defaults to "default".
+   * - "default": Standard iOS look
+   * - "glass": Glassmorphism effect
+   * - "modern": Vibrant accents and rounded pills
+   * - "black": True black for OLED
+   */
+  style?: PickerStyle;
+
+  /**
    * Primary accent color (used for confirm button and selection indicator).
    * Any valid CSS color string. Defaults to iOS blue "#007aff".
    */
@@ -85,6 +135,11 @@ export interface PickerOptions {
    * How many rows are visible in the picker window. Must be odd. Defaults to 5.
    */
   visibleRows?: number;
+
+  /**
+   * Whether to enable the 3D cylindrical wheel effect. Defaults to true.
+   */
+  is3D?: boolean;
 
   // ── Event callbacks ───────────────────────────────────────────────────────
 
@@ -140,6 +195,7 @@ export interface ColumnDef {
  * Resolved, normalised picker configuration (all optionals filled with defaults).
  */
 export interface ResolvedOptions {
+  displayMode: DisplayMode;
   mode: PickerMode;
   value: Date;
   minDate: Date | null;
@@ -148,9 +204,11 @@ export interface ResolvedOptions {
   format: string | null;
   locale: string;
   theme: PickerTheme;
+  style: PickerStyle;
   primaryColor: string;
   itemHeight: number;
   visibleRows: number;
+  is3D: boolean;
   onChange?: PickerOptions["onChange"];
   onConfirm?: PickerOptions["onConfirm"];
   onCancel?: PickerOptions["onCancel"];

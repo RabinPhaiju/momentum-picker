@@ -14,6 +14,9 @@
 
 import "./styles/wheel.css";
 
+import { createAutoUpdater } from "./calendar/positioning";
+import type { PopoverPlacement } from "./calendar/positioning";
+
 import type {
   PickerOptions,
   ResolvedOptions,
@@ -49,6 +52,10 @@ export class MomentumPicker {
   private overlay: HTMLDivElement | null = null;
   private sheet: HTMLDivElement | null = null;
   private columnsEl: HTMLDivElement | null = null;
+  private anchorEl: HTMLElement | null = null;
+
+  private _stopAutoUpdate: (() => void) | null = null;
+  private _boundOutsideClick: ((e: MouseEvent) => void) | null = null;
 
   // ── Columns ─────────────────────────────────────────────────────────────────
   private columns: Map<string, WheelColumn> = new Map();
@@ -57,7 +64,17 @@ export class MomentumPicker {
 
   constructor(options: PickerOptions) {
     this.opts = this.resolveOptions(options);
-    this.containerEl = this.resolveContainer(options.container);
+    
+    // Resolve DOM mounts
+    if (this.opts.displayMode === "popover" && options.anchor) {
+      this.anchorEl = this.resolveContainer(options.anchor);
+      this.containerEl = document.body;
+    } else if (this.opts.displayMode === "modal") {
+      this.containerEl = this.resolveContainer(options.container || document.body);
+    } else {
+      this.containerEl = this.resolveContainer(options.container || document.body);
+    }
+
     this._value = cloneDate(this.opts.value);
 
     this.render();
@@ -67,6 +84,7 @@ export class MomentumPicker {
 
   private resolveOptions(opts: PickerOptions): ResolvedOptions {
     return {
+      displayMode: opts.displayMode ?? "modal",
       mode: opts.mode ?? "datetime",
       value: opts.value instanceof Date ? opts.value : new Date(),
       minDate: opts.minDate ?? null,
@@ -75,9 +93,11 @@ export class MomentumPicker {
       format: opts.format ?? null,
       locale: opts.locale ?? navigator.language ?? "en-US",
       theme: opts.theme ?? "light",
+      style: opts.style ?? "default",
       primaryColor: opts.primaryColor ?? "#007aff",
       itemHeight: opts.itemHeight ?? 44,
       visibleRows: opts.visibleRows ?? 5,
+      is3D: opts.is3D ?? true,
       onChange: opts.onChange,
       onConfirm: opts.onConfirm,
       onCancel: opts.onCancel,
@@ -291,57 +311,73 @@ export class MomentumPicker {
     const container = this.containerEl;
 
     // ── Overlay (backdrop) ──────────────────────────────────────────────────
-    this.overlay = document.createElement("div");
-    this.overlay.className = "mp-overlay";
-    this.overlay.setAttribute("role", "dialog");
-    this.overlay.setAttribute("aria-modal", "true");
-    this.overlay.setAttribute("aria-label", "Date Time Picker");
-    this.overlay.dataset.mpTheme = this.opts.theme;
+    if (this.opts.displayMode === "modal") {
+      this.overlay = document.createElement("div");
+      this.overlay.className = "mp-overlay";
+      this.overlay.setAttribute("role", "dialog");
+      this.overlay.setAttribute("aria-modal", "true");
+      this.overlay.setAttribute("aria-label", "Date Time Picker");
+      this.overlay.dataset.mpTheme = this.opts.theme;
+      this.overlay.dataset.mpStyle = this.opts.style;
 
-    // Close on backdrop click
-    this.overlay.addEventListener("click", (e) => {
-      if (e.target === this.overlay) {
-        this.opts.onCancel?.();
-        this.hide();
-      }
-    });
+      // Close on backdrop click
+      this.overlay.addEventListener("click", (e) => {
+        if (e.target === this.overlay) {
+          this.opts.onCancel?.();
+          this.hide();
+        }
+      });
+    }
 
     // ── Sheet ───────────────────────────────────────────────────────────────
     this.sheet = document.createElement("div");
     this.sheet.className = "mp-sheet";
 
+    // Display Mode Styling
+    if (this.opts.displayMode === "inline") {
+      this.sheet.classList.add("mp-inline");
+    } else if (this.opts.displayMode === "popover") {
+      this.sheet.classList.add("mp-popover");
+    }
+
+    this.sheet.dataset.mpTheme = this.opts.theme;
+    this.sheet.dataset.mpStyle = this.opts.style;
+
     // Apply CSS custom properties
     this.applyCustomProperties(this.sheet);
 
     // ── Header ──────────────────────────────────────────────────────────────
-    const header = document.createElement("div");
-    header.className = "mp-header";
+    if (this.opts.displayMode !== "inline") {
+      const header = document.createElement("div");
+      header.className = "mp-header";
 
-    const cancelBtn = document.createElement("button");
-    cancelBtn.className = "mp-btn mp-btn-cancel";
-    cancelBtn.textContent = "Cancel";
-    cancelBtn.setAttribute("aria-label", "Cancel date selection");
-    cancelBtn.addEventListener("click", () => {
-      this.opts.onCancel?.();
-      this.hide();
-    });
+      const cancelBtn = document.createElement("button");
+      cancelBtn.className = "mp-btn mp-btn-cancel";
+      cancelBtn.textContent = "Cancel";
+      cancelBtn.setAttribute("aria-label", "Cancel date selection");
+      cancelBtn.addEventListener("click", () => {
+        this.opts.onCancel?.();
+        this.hide();
+      });
 
-    const title = document.createElement("div");
-    title.className = "mp-header-title";
-    title.textContent = this.getTitleByMode();
+      const title = document.createElement("div");
+      title.className = "mp-header-title";
+      title.textContent = this.getTitleByMode();
 
-    const confirmBtn = document.createElement("button");
-    confirmBtn.className = "mp-btn mp-btn-confirm";
-    confirmBtn.textContent = "Done";
-    confirmBtn.setAttribute("aria-label", "Confirm date selection");
-    confirmBtn.addEventListener("click", () => {
-      this.emitConfirm();
-      this.hide();
-    });
+      const confirmBtn = document.createElement("button");
+      confirmBtn.className = "mp-btn mp-btn-confirm";
+      confirmBtn.textContent = "Done";
+      confirmBtn.setAttribute("aria-label", "Confirm date selection");
+      confirmBtn.addEventListener("click", () => {
+        this.emitConfirm();
+        this.hide();
+      });
 
-    header.appendChild(cancelBtn);
-    header.appendChild(title);
-    header.appendChild(confirmBtn);
+      header.appendChild(cancelBtn);
+      header.appendChild(title);
+      header.appendChild(confirmBtn);
+      this.sheet.appendChild(header);
+    }
 
     // ── Columns container ───────────────────────────────────────────────────
     this.columnsEl = document.createElement("div");
@@ -367,16 +403,25 @@ export class MomentumPicker {
     // ── Instantiate columns ─────────────────────────────────────────────────
     const defs = this.buildColumnDefs();
     defs.forEach((def) => {
-      const col = new WheelColumn(def, this.opts.itemHeight, this.opts.visibleRows);
+      const col = new WheelColumn(
+        def,
+        this.opts.itemHeight,
+        this.opts.visibleRows,
+        this.opts.is3D,
+      );
       this.columns.set(def.key, col);
       this.columnsEl!.appendChild(col.el);
     });
 
     // ── Assemble ────────────────────────────────────────────────────────────
-    this.sheet.appendChild(header);
     this.sheet.appendChild(this.columnsEl);
-    this.overlay.appendChild(this.sheet);
-    container.appendChild(this.overlay);
+
+    if (this.opts.displayMode === "modal" && this.overlay) {
+      this.overlay.appendChild(this.sheet);
+      container.appendChild(this.overlay);
+    } else {
+      container.appendChild(this.sheet);
+    }
 
     // ── Keyboard: close on Escape ───────────────────────────────────────────
     document.addEventListener("keydown", this.handleGlobalKeydown.bind(this));
@@ -397,8 +442,24 @@ export class MomentumPicker {
   }
 
   private handleGlobalKeydown(e: KeyboardEvent): void {
-    if (!this.overlay?.classList.contains("mp-visible")) return;
+    if (this.opts.displayMode === "inline") return;
+    
+    const isVisible = this.opts.displayMode === "modal" 
+      ? this.overlay?.classList.contains("mp-visible")
+      : this.sheet?.classList.contains("mp-visible");
+
+    if (!isVisible) return;
+
     if (e.key === "Escape") {
+      this.opts.onCancel?.();
+      this.hide();
+    }
+  }
+
+  private handleOutsideClick(e: MouseEvent): void {
+    const target = e.target as Node;
+    if (this.opts.displayMode === "popover" && this.sheet && this.anchorEl) {
+      if (this.sheet.contains(target) || this.anchorEl.contains(target)) return;
       this.opts.onCancel?.();
       this.hide();
     }
@@ -410,7 +471,31 @@ export class MomentumPicker {
    * Display the picker (slide-up animation).
    */
   show(): this {
-    this.overlay?.classList.add("mp-visible");
+    if (this.opts.displayMode === "modal" && this.overlay) {
+      this.overlay.classList.add("mp-visible");
+    } else if (this.opts.displayMode === "popover" && this.sheet && this.anchorEl) {
+      this.sheet.style.display = "block";
+      this._stopAutoUpdate = createAutoUpdater(
+        this.anchorEl,
+        this.sheet,
+        ({ top, left }) => {
+          this.sheet!.style.top = `${top}px`;
+          this.sheet!.style.left = `${left}px`;
+        },
+        "bottom-start" as PopoverPlacement,
+      );
+      
+      // small delay to allow display: block to apply before animating opacity/transform
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => this.sheet!.classList.add("mp-visible"));
+      });
+
+      if (!this._boundOutsideClick) {
+        this._boundOutsideClick = this.handleOutsideClick.bind(this);
+        setTimeout(() => document.addEventListener("click", this._boundOutsideClick!), 0);
+      }
+    }
+
     // Shift focus into the sheet for accessibility
     setTimeout(() => {
       const firstCol = this.columnsEl?.querySelector<HTMLElement>(".mp-column");
@@ -423,7 +508,24 @@ export class MomentumPicker {
    * Hide the picker (slide-down animation).
    */
   hide(): this {
-    this.overlay?.classList.remove("mp-visible");
+    if (this.opts.displayMode === "modal" && this.overlay) {
+      this.overlay.classList.remove("mp-visible");
+    } else if (this.opts.displayMode === "popover" && this.sheet) {
+      this.sheet.classList.remove("mp-visible");
+      setTimeout(() => {
+        if (this.sheet && !this.sheet.classList.contains("mp-visible")) {
+          this.sheet.style.display = "none";
+        }
+      }, 400); // transition duration
+      
+      this._stopAutoUpdate?.();
+      this._stopAutoUpdate = null;
+
+      if (this._boundOutsideClick) {
+        document.removeEventListener("click", this._boundOutsideClick);
+        this._boundOutsideClick = null;
+      }
+    }
     return this;
   }
 
@@ -431,7 +533,11 @@ export class MomentumPicker {
    * Toggle visibility.
    */
   toggle(): this {
-    if (this.overlay?.classList.contains("mp-visible")) {
+    const isVisible = this.opts.displayMode === "modal" 
+      ? this.overlay?.classList.contains("mp-visible")
+      : this.sheet?.classList.contains("mp-visible");
+
+    if (isVisible) {
       this.hide();
     } else {
       this.show();
@@ -508,9 +614,17 @@ export class MomentumPicker {
       this.opts.theme = partial.theme;
       if (this.overlay) this.overlay.dataset.mpTheme = partial.theme;
     }
+    if (partial.style) {
+      this.opts.style = partial.style;
+      if (this.overlay) this.overlay.dataset.mpStyle = partial.style;
+    }
     if (partial.primaryColor) {
       this.opts.primaryColor = partial.primaryColor;
       if (this.sheet) this.applyCustomProperties(this.sheet);
+    }
+    if (partial.is3D !== undefined) {
+      this.opts.is3D = partial.is3D;
+      this.columns.forEach((col) => col.setIs3D(partial.is3D!));
     }
     return this;
   }
