@@ -46,6 +46,7 @@
   "scripts": {
     "dev": "vite example --host",
     "build": "vite build && tsc --emitDeclarationOnly --outDir dist/types",
+    "build:demo": "vite build example --outDir ../docs --base /momentum-picker/ --emptyOutDir",
     "build:types": "tsc --emitDeclarationOnly --outDir dist/types",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"

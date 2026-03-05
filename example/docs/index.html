@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>momentum-picker v0.2 — DatePicker + Wheel Demo</title>
+    <meta
+      name="description"
+      content="Full-featured DatePicker and iOS Wheel picker demo for momentum-picker."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..700;1,14..32,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #f2f2f7;
+        --card: #ffffff;
+        --text: #1c1c1e;
+        --text2: #8e8e93;
+        --accent: #007aff;
+        --border: rgba(60, 60, 67, 0.12);
+        --radius: 16px;
+        --font: "Inter", system-ui, sans-serif;
+      }
+
+      body.dark {
+        --bg: #000000;
+        --card: #1c1c1e;
+        --text: #ffffff;
+        --text2: #636366;
+        --border: rgba(255, 255, 255, 0.08);
+      }
+
+      body {
+        font-family: var(--font);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+
+      /* ── Layout ── */
+      .page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 16px 80px;
+      }
+
+      .hero {
+        text-align: center;
+        padding: 48px 0 40px;
+      }
+      .badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #007aff, #5e5ce6);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 14px;
+        border-radius: 20px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+      }
+      h1 {
+        font-size: clamp(28px, 5vw, 44px);
+        font-weight: 800;
+        letter-spacing: -1px;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, var(--text), var(--text2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .hero p {
+        color: var(--text2);
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      /* ── Section ── */
+      .section {
+        margin-bottom: 48px;
+      }
+      .section-title {
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text2);
+        margin-bottom: 16px;
+        padding-left: 4px;
+      }
+
+      /* ── Grid ── */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+      }
+      .grid--2 {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      }
+      .grid--3 {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+
+      /* ── Card ── */
+      .card {
+        background: var(--card);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        padding: 24px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s;
+      }
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
+      }
+
+      .card-title {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .card-desc {
+        font-size: 13px;
+        color: var(--text2);
+        margin-bottom: 16px;
+        line-height: 1.5;
+      }
+
+      /* ── Buttons ── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--accent);
+        color: #fff;
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 10px;
+        cursor: pointer;
+        width: 100%;
+        justify-content: center;
+        transition:
+          opacity 0.15s,
+          transform 0.15s;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .btn:hover {
+        opacity: 0.85;
+      }
+      .btn:active {
+        transform: scale(0.97);
+        opacity: 0.7;
+      }
+      .btn.outline {
+        background: transparent;
+        border: 1.5px solid var(--accent);
+        color: var(--accent);
+      }
+
+      .btn.active {
+        background: var(--accent);
+        color: #fff;
+        border: 1.5px solid var(--accent);
+      }
+
+      /* ── Result box ── */
+      .result {
+        margin-top: 12px;
+        background: var(--bg);
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 13px;
+        color: var(--text2);
+        min-height: 38px;
+        border: 1px solid var(--border);
+        font-family: "SF Mono", "Fira Code", monospace;
+        transition: background 0.3s;
+        word-break: break-all;
+      }
+      .result em {
+        color: var(--accent);
+        font-style: normal;
+        font-weight: 600;
+      }
+
+      /* ── Controls ── */
+      .controls {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        display: flex;
+        gap: 8px;
+        z-index: 9999;
+      }
+      .icon-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--card);
+        border: 1px solid var(--border);
+        cursor: pointer;
+        font-size: 17px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.15s;
+      }
+      .icon-btn:hover {
+        transform: scale(1.1);
+      }
+
+      /* ── Inline calendar container ── */
+      .inline-wrap {
+        margin-top: 0;
+      }
+
+      /* ── Input styled trigger ── */
+      .dp-input-wrapper {
+        width: 100%;
+      }
+      .dp-input {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1.5px solid var(--border);
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 14px;
+        cursor: pointer;
+        outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .dp-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+      }
+
+      /* ── Colour swatches ── */
+      .swatches {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+      .swatch {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 3px solid transparent;
+        transition:
+          transform 0.15s,
+          border-color 0.15s;
+      }
+      .swatch.active {
+        border-color: var(--text);
+        transform: scale(1.2);
+      }
+
+      /* ── Chips (for multi-select display) ── */
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 8px;
+      }
+      .chip {
+        font-size: 11px;
+        font-family: monospace;
+        background: color-mix(in srgb, var(--accent) 12%, transparent);
+        color: var(--accent);
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-weight: 600;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 60px;
+        color: var(--text2);
+        font-size: 13px;
+      }
+      footer a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+      }
+    </style>
+    <script type="module" crossorigin src="/momentum-picker/assets/index-Cja_spMx.js"></script>
+    <link rel="stylesheet" crossorigin href="/momentum-picker/assets/index-Bl5yP7PI.css">
+  </head>
+  <body id="body">
+    <div class="controls">
+      <button
+        class="icon-btn"
+        id="theme-toggle"
+        aria-label="Toggle dark mode"
+        title="Toggle theme"
+      >
+        🌙
+      </button>
+      <button
+        class="icon-btn"
+        id="d3-toggle"
+        title="Toggle 3D Wheel"
+        style="font-size: 14px; font-weight: 800"
+      >
+        3D
+      </button>
+    </div>
+
+    <div class="page">
+      <!-- Hero -->
+      <header class="hero">
+        <div class="badge">momentum-picker v0.2</div>
+        <h1>DatePicker + iOS Wheel</h1>
+        <p>
+          Single · Range · Multi · Week · Month · Year · Inline · Popover ·
+          Modal<br />
+          Keyboard navigation · ARIA · Dark mode · Custom themes · Zero
+          dependencies
+        </p>
+      </header>
+
+      <section class="section">
+        <div class="section-title">📅 Inline Calendar Picker</div>
+        <div class="grid">
+          <!-- Single -->
+          <div class="card">
+            <div class="card-title">🗓️ Single Date</div>
+            <div class="card-desc">
+              Click any day. Min date = today. Shows Today + Clear buttons.
+            </div>
+            <div class="inline-wrap" id="dp-single"></div>
+            <div class="result" id="r-single">Select a date…</div>
+          </div>
+
+          <!-- Range -->
+          <div class="card">
+            <div class="card-title">📏 Date Range</div>
+            <div class="card-desc">
+              Click start then end — or drag. Weekends disabled.
+            </div>
+            <div class="inline-wrap" id="dp-range"></div>
+            <div class="result" id="r-range">Select a range…</div>
+          </div>
+
+          <!-- Multiple -->
+          <div class="card">
+            <div class="card-title">🔢 Multiple Dates</div>
+            <div class="card-desc">
+              Click to toggle individual dates. Max date = 3 months from now.
+            </div>
+            <div class="inline-wrap" id="dp-multi"></div>
+            <div id="r-multi" class="result">
+              <div class="chips" id="chips-multi"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 2: Picker Mode (Week / Month / Year) ── -->
+      <section class="section">
+        <div class="section-title">🗓️ Granularity Modes</div>
+        <div class="grid grid--2">
+          <!-- Week -->
+          <div class="card">
+            <div class="card-title">📆 Week Picker</div>
+            <div class="card-desc">
+              Select an entire week. Week numbers shown on left — click to
+              select that week too.
+            </div>
+            <div class="inline-wrap" id="dp-week"></div>
+            <div class="result" id="r-week">Select a week…</div>
+          </div>
+
+          <!-- Month -->
+          <div class="card">
+            <div class="card-title">🗓️ Month Picker</div>
+            <div class="card-desc">
+              Opens directly in month view — no day grid shown.
+            </div>
+            <div class="inline-wrap" id="dp-month"></div>
+            <div class="result" id="r-month">Select a month…</div>
+          </div>
+
+          <!-- Year -->
+          <div class="card">
+            <div class="card-title">🗓️ Year Picker</div>
+            <div class="card-desc">
+              Opens directly in year view — no day grid shown.
+            </div>
+            <div class="inline-wrap" id="dp-year"></div>
+            <div class="result" id="r-year">Select a year…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 3: Popover Mode ── -->
+      <section class="section">
+        <div class="section-title">💬 Popover Mode (Auto-flip)</div>
+        <div class="grid grid--3">
+          <div class="card">
+            <div class="card-title">📅 Date Popover</div>
+            <div class="card-desc">
+              Click the input to open. Smart positioning — flips if near edge.
+            </div>
+            <input
+              class="dp-input"
+              id="input-single"
+              placeholder="Pick a date…"
+              readonly
+              aria-label="Date picker input"
+            />
+            <div class="result" id="r-popover-single">Click input above…</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">📏 Range Popover</div>
+            <div class="card-desc">
+              Confirm/Cancel buttons visible. Locale: fr-FR.
+            </div>
+            <input
+              class="dp-input"
+              id="input-range"
+              placeholder="Pick a range…"
+              readonly
+              aria-label="Date range picker input"
+            />
+            <div class="result" id="r-popover-range">Click input above…</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🔢 Multi-date Popover</div>
+            <div class="card-desc">
+              Select multiple dates. Confirm when done.
+            </div>
+            <input
+              class="dp-input"
+              id="input-multi"
+              placeholder="Pick multiple dates…"
+              readonly
+              aria-label="Multi-date picker input"
+            />
+            <div class="result" id="r-popover-multi">Click input above…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 4: Modal Mode ── -->
+      <section class="section">
+        <div class="section-title">🪟 Modal Mode</div>
+        <div class="grid grid--3">
+          <div class="card">
+            <div class="card-title">📅 Single + Confirm</div>
+            <div class="card-desc">
+              Opens as centred overlay. Press Escape or Cancel to dismiss.
+            </div>
+            <button class="btn" id="open-modal-single">
+              📅 Open Date Modal
+            </button>
+            <div class="result" id="r-modal-single">Waiting…</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">📏 Date Range Modal</div>
+            <div class="card-desc">Select a start and end date in a modal.</div>
+            <button class="btn" id="open-modal-range">
+              📏 Open Range Modal
+            </button>
+            <div class="result" id="r-modal-range">Waiting…</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🔢 Multi-select Modal</div>
+            <div class="card-desc">Select multiple non-contiguous dates.</div>
+            <button class="btn" id="open-modal-multi">
+              🔢 Open Multi Modal
+            </button>
+            <div class="result" id="r-modal-multi">Waiting…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 5: Custom & Theming ── -->
+      <section class="section">
+        <div class="section-title">🎨 Custom Themes & Renderers</div>
+        <div class="grid grid--2">
+          <div class="card">
+            <div class="card-title">🎨 Custom Accent Color</div>
+            <div class="card-desc">
+              Pick a swatch then the calendar updates instantly.
+            </div>
+            <div class="swatches" id="swatches">
+              <div
+                class="swatch active"
+                data-color="#007aff"
+                style="background: #007aff"
+                title="iOS Blue"
+              ></div>
+              <div
+                class="swatch"
+                data-color="#34c759"
+                style="background: #34c759"
+                title="iOS Green"
+              ></div>
+              <div
+                class="swatch"
+                data-color="#ff9500"
+                style="background: #ff9500"
+                title="iOS Orange"
+              ></div>
+              <div
+                class="swatch"
+                data-color="#ff3b30"
+                style="background: #ff3b30"
+                title="iOS Red"
+              ></div>
+              <div
+                class="swatch"
+                data-color="#af52de"
+                style="background: #af52de"
+                title="iOS Purple"
+              ></div>
+              <div
+                class="swatch"
+                data-color="#ff2d55"
+                style="background: #ff2d55"
+                title="iOS Pink"
+              ></div>
+              <div
+                class="swatch"
+                data-color="#00b4d8"
+                style="background: #00b4d8"
+                title="Ocean"
+              ></div>
+            </div>
+            <div class="inline-wrap" id="dp-custom"></div>
+            <div class="result" id="r-custom">Select a date…</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🎭 Custom renderDay</div>
+            <div class="card-desc">
+              Emojis injected into day cells. Even days get 🌟, odd days 🔵.
+            </div>
+            <div class="inline-wrap" id="dp-renderday"></div>
+            <div class="result" id="r-renderday">Select a date…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 7: Advanced DatePicker Features ── -->
+      <section class="section">
+        <div class="section-title">🆕 Advanced DatePicker Features</div>
+        <div class="grid">
+          <!-- 7a. Range Presets -->
+          <div class="card">
+            <div class="card-title">📅 Range Presets</div>
+            <div id="dp-presets"></div>
+            <div class="result" id="r-presets">
+              Select a preset or pick a range…
+            </div>
+          </div>
+
+          <!-- 7b. Footer Position: Top -->
+          <div class="card">
+            <div class="card-title">⬆️ Footer Position: Top</div>
+            <div id="dp-footer-top"></div>
+            <div class="result" id="r-footer-top">Waiting…</div>
+          </div>
+
+          <!-- 7c. Datetime Seconds -->
+          <div class="card">
+            <div class="card-title">⏱️ Datetime with Seconds</div>
+            <div id="dp-datetime-sec"></div>
+            <div class="result" id="r-datetime-sec">Pick a date + time…</div>
+          </div>
+
+          <!-- 7d. Clipboard Paste -->
+          <div class="card">
+            <div class="card-title">📋 Paste from Clipboard</div>
+            <p style="font-size: 12px; color: var(--text2); margin: 0 0 8px">
+              Copy any date string (e.g. <code>2026-06-15</code> or
+              <code>June 15, 2026</code>), click the calendar below, then press
+              <kbd>Ctrl/Cmd+V</kbd>.
+            </p>
+            <div id="dp-paste"></div>
+            <div class="result" id="r-paste">Waiting for paste…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 6: iOS Wheel Picker ── -->
+      <section class="section">
+        <div class="section-title">🎡 iOS Wheel Picker (MomentumPicker)</div>
+        <div class="grid">
+          <div class="card">
+            <div class="card-title">📅 Date Wheel</div>
+            <div class="card-desc">
+              Year · Month · Day columns. 3D cylindrical effect!
+            </div>
+            <button class="btn" id="open-wheel-date">📅 Open Wheel Date</button>
+            <div class="result" id="r-wheel-date">Waiting…</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">⏰ Time Wheel</div>
+            <div class="card-desc">Hour · Minute — 5 min step.</div>
+            <button class="btn" id="open-wheel-time">⏰ Open Wheel Time</button>
+            <div class="result" id="r-wheel-time">Waiting…</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">📆 DateTime Wheel</div>
+            <div class="card-desc">All 5 columns. Formatted output.</div>
+            <button class="btn" id="open-wheel-dt">
+              📆 Open DateTime Wheel
+            </button>
+            <div class="result" id="r-wheel-dt">Waiting…</div>
+          </div>
+
+          <!-- Inline / Popover Tests -->
+          <div
+            class="card"
+            style="grid-column: 1 / -1; display: flex; flex-direction: column"
+          >
+            <div class="card-title">📝 Inline Display Mode</div>
+            <div class="card-desc">
+              Permanently visible inside a container without an overlay
+              backdrop. Since there is no "Done" button, it updates live.
+            </div>
+
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 20px;
+                margin-top: 15px;
+              "
+            >
+              <div>
+                <strong>Date Inline</strong>
+                <div
+                  id="inline-date-mount"
+                  style="
+                    max-height: 250px;
+                    margin: 10px 0;
+                    border: 1px dashed var(--mp-border);
+                    border-radius: 8px;
+                  "
+                ></div>
+                <div class="result" id="r-inline-date">Waiting…</div>
+              </div>
+              <div>
+                <strong>Time Inline</strong>
+                <div
+                  id="inline-time-mount"
+                  style="
+                    max-height: 250px;
+                    margin: 10px 0;
+                    border: 1px dashed var(--mp-border);
+                    border-radius: 8px;
+                  "
+                ></div>
+                <div class="result" id="r-inline-time">Waiting…</div>
+              </div>
+              <div>
+                <strong>DateTime Inline</strong>
+                <div
+                  id="inline-dt-mount"
+                  style="
+                    max-height: 250px;
+                    margin: 10px 0;
+                    border: 1px dashed var(--mp-border);
+                    border-radius: 8px;
+                  "
+                ></div>
+                <div class="result" id="r-inline-dt">Waiting…</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="grid-column: 1 / -1">
+            <div class="card-title">🎈 Popover Display Mode</div>
+            <div class="card-desc">
+              Anchored directly to a trigger element with smart positioning.
+            </div>
+
+            <div
+              style="
+                display: flex;
+                gap: 15px;
+                flex-wrap: wrap;
+                margin-top: 15px;
+              "
+            >
+              <div>
+                <button
+                  class="btn"
+                  id="open-popover-date"
+                  style="background: var(--primary)"
+                >
+                  🎈 Date Popover
+                </button>
+                <div class="result" id="r-popover-date" style="margin-top: 8px">
+                  Waiting…
+                </div>
+              </div>
+              <div>
+                <button
+                  class="btn"
+                  id="open-popover-time"
+                  style="background: var(--primary)"
+                >
+                  🎈 Time Popover
+                </button>
+                <div class="result" id="r-popover-time" style="margin-top: 8px">
+                  Waiting…
+                </div>
+              </div>
+              <div>
+                <button
+                  class="btn"
+                  id="open-popover-dt"
+                  style="background: var(--primary)"
+                >
+                  🎈 DateTime Popover
+                </button>
+                <div class="result" id="r-popover-dt" style="margin-top: 8px">
+                  Waiting…
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 8: Style Showcase ── -->
+      <section class="section">
+        <div class="section-title">🎨 Style Showcase</div>
+        <!-- Display Mode Switcher -->
+        <div
+          style="
+            margin-bottom: 24px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-start;
+            flex-wrap: nowrap;
+            width: fit-content;
+          "
+        >
+          <button
+            class="btn"
+            id="mode-switcher-modal"
+            style="
+              background: var(--accent);
+              border: 1.5px solid var(--accent);
+              color: #fff;
+              width: 100px;
+            "
+          >
+            Modal
+          </button>
+          <button
+            class="btn outline"
+            id="mode-switcher-popover"
+            style="width: 100px"
+          >
+            Popover
+          </button>
+          <button
+            class="btn outline"
+            id="mode-switcher-inline"
+            style="width: 100px"
+          >
+            Inline
+          </button>
+          <span
+            style="
+              align-self: center;
+              margin-left: 16px;
+              font-size: 12px;
+              color: var(--text2);
+            "
+            >Currently showing: <strong id="current-mode">Modal</strong></span
+          >
+        </div>
+        <div class="grid" id="style-grid">
+          <!-- Dynamic cards will be injected by JS -->
+        </div>
+      </section>
+    </div>
+    <!-- /.page -->
+
+    <footer>
+      Built with
+      <a href="https://github.com/your-org/momentum-picker">momentum-picker</a>
+      · Vanilla TypeScript · Zero dependencies
+    </footer>
+
+    <!-- ── Mount point for modal pickers (must be in body) ── -->
+    <div id="modal-mount"></div>
+
+  </body>
+</html>
