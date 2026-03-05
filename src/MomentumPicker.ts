@@ -402,7 +402,7 @@ export class MomentumPicker {
 
     // ── Instantiate columns ─────────────────────────────────────────────────
     const defs = this.buildColumnDefs();
-    defs.forEach((def) => {
+    defs.forEach((def, idx) => {
       const col = new WheelColumn(
         def,
         this.opts.itemHeight,
@@ -411,6 +411,14 @@ export class MomentumPicker {
       );
       this.columns.set(def.key, col);
       this.columnsEl!.appendChild(col.el);
+
+      // Add colon separator between hour and minute columns
+      if (def.key === "hour" && idx + 1 < defs.length && defs[idx + 1].key === "minute") {
+        const separator = document.createElement("div");
+        separator.className = "mp-time-separator";
+        separator.textContent = ":";
+        this.columnsEl!.appendChild(separator);
+      }
     });
 
     // ── Assemble ────────────────────────────────────────────────────────────
@@ -613,10 +621,12 @@ export class MomentumPicker {
     if (partial.theme) {
       this.opts.theme = partial.theme;
       if (this.overlay) this.overlay.dataset.mpTheme = partial.theme;
+      if (this.sheet) this.sheet.dataset.mpTheme = partial.theme;
     }
     if (partial.style) {
       this.opts.style = partial.style;
       if (this.overlay) this.overlay.dataset.mpStyle = partial.style;
+      if (this.sheet) this.sheet.dataset.mpStyle = partial.style;
     }
     if (partial.primaryColor) {
       this.opts.primaryColor = partial.primaryColor;

@@ -183,6 +183,12 @@
         color: var(--accent);
       }
 
+      .btn.active {
+        background: var(--accent);
+        color: #fff;
+        border: 1.5px solid var(--accent);
+      }
+
       /* ── Result box ── */
       .result {
         margin-top: 12px;
@@ -720,6 +726,13 @@
       <!-- ── Section 7: Style Showcase ── -->
       <section class="section">
         <div class="section-title">🎨 Style Showcase</div>
+        <!-- Display Mode Switcher -->
+        <div style="margin-bottom: 24px; display: flex; gap: 8px; justify-content: flex-start; flex-wrap: nowrap; width: fit-content;">
+          <button class="btn" id="mode-switcher-modal" style="background: var(--accent); border: 1.5px solid var(--accent); color: #fff; width: 100px;">Modal</button>
+          <button class="btn outline" id="mode-switcher-popover" style="width: 100px;">Popover</button>
+          <button class="btn outline" id="mode-switcher-inline" style="width: 100px;">Inline</button>
+          <span style="align-self: center; margin-left: 16px; font-size: 12px; color: var(--text2);">Currently showing: <strong id="current-mode">Modal</strong></span>
+        </div>
         <div class="grid" id="style-grid">
           <!-- Dynamic cards will be injected by JS -->
         </div>
@@ -1299,18 +1312,28 @@
         "ant",
       ];
 
+      let currentDisplayMode = "modal"; // Track current display mode
+      const styleShowcasePickers = {}; // Store all style pickers
+
       const styleGrid = document.getElementById("style-grid");
       styles.forEach((style) => {
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
           <div class="card-title" style="text-transform: capitalize">${style}</div>
-          <button class="btn" id="open-${style}">${style} Picker</button>
+          <button class="btn mode-toggle-trigger" id="open-${style}">${style} Picker</button>
+          <div id="inline-container-${style}" style="max-height: 250px; margin: 10px 0; border: 1px dashed var(--mp-border); border-radius: 8px; display: none;"></div>
           <div class="result" id="r-${style}">Waiting…</div>
         `;
         styleGrid.appendChild(card);
 
-        const picker = new MomentumPicker({
+        // Create all three versions (modal, popover, inline)
+        if (!styleShowcasePickers[style]) {
+          styleShowcasePickers[style] = {};
+        }
+
+        // Modal version
+        styleShowcasePickers[style].modal = new MomentumPicker({
           container: "#modal-mount",
           style: style,
           mode: "datetime",
@@ -1321,10 +1344,133 @@
           },
         });
 
-        document
-          .getElementById(`open-${style}`)
-          .addEventListener("click", () => picker.show());
-        allWheels.push(picker);
+        // Popover version
+        styleShowcasePickers[style].popover = new MomentumPicker({
+          anchor: `#open-${style}`,
+          displayMode: "popover",
+          style: style,
+          mode: "datetime",
+          format: "YYYY-MM-DD HH:mm",
+          onConfirm: (_, fmt) => {
+            document.getElementById(`r-${style}`).innerHTML =
+              `✅ <em>${fmt}</em>`;
+          },
+        });
+
+        // Inline version
+        styleShowcasePickers[style].inline = new MomentumPicker({
+          container: `#inline-container-${style}`,
+          displayMode: "inline",
+          style: style,
+          mode: "datetime",
+          format: "YYYY-MM-DD HH:mm",
+          onChange: (_, fmt) => {
+            document.getElementById(`r-${style}`).innerHTML =
+              `Live: <em>${fmt}</em>`;
+          },
+        });
+
+        const openBtn = document.getElementById(`open-${style}`);
+        openBtn.addEventListener("click", (e) => {
+          if (currentDisplayMode === "modal") {
+            styleShowcasePickers[style].modal.show();
+          } else if (currentDisplayMode === "popover") {
+            e.stopPropagation();
+            styleShowcasePickers[style].popover.toggle();
+          }
+        });
+
+        allWheels.push(
+          styleShowcasePickers[style].modal,
+          styleShowcasePickers[style].popover,
+          styleShowcasePickers[style].inline,
+        );
+      });
+
+      // Display mode switcher
+      const modeButtonModal = document.getElementById("mode-switcher-modal");
+      const modeButtonPopover = document.getElementById(
+        "mode-switcher-popover",
+      );
+      const modeButtonInline = document.getElementById("mode-switcher-inline");
+      const currentModeDisplay = document.getElementById("current-mode");
+
+      const switchMode = (mode) => {
+        currentDisplayMode = mode;
+        currentModeDisplay.textContent =
+          mode.charAt(0).toUpperCase() + mode.slice(1);
+
+        // Update button states
+        [modeButtonModal, modeButtonPopover, modeButtonInline].forEach((btn) =>
+          btn.classList.remove("active"),
+        );
+        if (mode === "modal") {
+          modeButtonModal.style.background = "var(--accent)";
+          modeButtonModal.style.color = "#fff";
+        } else {
+          modeButtonModal.style.background = "transparent";
+          modeButtonModal.style.color = "var(--accent)";
+        }
+        if (mode === "popover") {
+          modeButtonPopover.style.background = "var(--accent)";
+          modeButtonPopover.style.color = "#fff";
+        } else {
+          modeButtonPopover.style.background = "transparent";
+          modeButtonPopover.style.color = "var(--accent)";
+        }
+        if (mode === "inline") {
+          modeButtonInline.style.background = "var(--accent)";
+          modeButtonInline.style.color = "#fff";
+        } else {
+          modeButtonInline.style.background = "transparent";
+          modeButtonInline.style.color = "var(--accent)";
+        }
+        [modeButtonModal, modeButtonPopover, modeButtonInline].forEach((btn) => {
+          if (
+            (mode === "modal" && btn === modeButtonModal) ||
+            (mode === "popover" && btn === modeButtonPopover) ||
+            (mode === "inline" && btn === modeButtonInline)
+          ) {
+            btn.classList.add("active");
+          } else {
+            btn.classList.remove("active");
+          }
+        });
+
+        // Toggle visibility of buttons and inline containers
+        styles.forEach((style) => {
+          const btn = document.getElementById(`open-${style}`);
+          const inlineContainer = document.getElementById(
+            `inline-container-${style}`,
+          );
+          const resultDiv = document.getElementById(`r-${style}`);
+
+          if (mode === "inline") {
+            btn.style.display = "none";
+            inlineContainer.style.display = "block";
+            resultDiv.style.display = "block";
+            // Initialize inline picker if not already shown
+            styleShowcasePickers[style].inline.show();
+          } else {
+            btn.style.display = "block";
+            inlineContainer.style.display = "none";
+            resultDiv.style.display = "block";
+            // Reset result display for modal/popover
+            resultDiv.innerHTML = "Waiting…";
+          }
+        });
+      };
+
+      modeButtonModal.addEventListener("click", () => {
+        switchMode("modal");
+      });
+
+      modeButtonPopover.addEventListener("click", () => {
+        switchMode("popover");
+      });
+
+      modeButtonInline.addEventListener("click", () => {
+        switchMode("inline");
       });
     </script>
   </body>

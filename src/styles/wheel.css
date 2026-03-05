@@ -64,8 +64,9 @@
 }
 [data-mp-theme="dark"][data-mp-style="neumorphism"] .mp-selection-band {
   box-shadow: inset 4px 4px 10px rgba(0,0,0,0.5), inset -4px -4px 10px rgba(255,255,255,0.05);
+}[data-mp-style="neumorphism"] .mp-time-separator {
+  color: var(--mp-text);
 }
-
 /* ── Brutalist ────────────────────────────────────────────────────────────── */
 [data-mp-style="brutalist"] {
   --mp-bg: #fff;
@@ -89,6 +90,10 @@
   font-weight: 900;
   text-transform: uppercase;
 }
+[data-mp-style="brutalist"] .mp-time-separator {
+  color: #000;
+  font-family: "Courier New", monospace;
+}
 
 /* ── Retro (Win95) ───────────────────────────────────────────────────────── */
 [data-mp-style="retro"] {
@@ -109,6 +114,9 @@
 }
 [data-mp-style="retro"] .mp-column-item[aria-selected="true"] { 
   color: #fff; 
+}
+[data-mp-style="retro"] .mp-time-separator {
+  color: #000;
 }
 
 /* ── Gradient ────────────────────────────────────────────────────────────── */
@@ -134,6 +142,9 @@
 }
 [data-mp-style="pastel"] .mp-column-item[aria-selected="true"] {
   color: #c92a2a;
+}
+[data-mp-style="pastel"] .mp-time-separator {
+  color: #495057;
 }
 
 /* ── Vibrant ──────────────────────────────────────────────────────────────── */
@@ -181,6 +192,9 @@
 }
 [data-mp-style="material"] .mp-column-item[aria-selected="true"] {
   color: #21005d;
+}
+[data-mp-style="material"] .mp-time-separator {
+  color: #6750a4;
 }
 
 /* ── iOS / macOS ──────────────────────────────────────────────────────────── */
@@ -379,6 +393,23 @@
 
 .mp-column:active { cursor: grabbing; }
 
+/* ── Time Separator (colon between hour and minute) ────────────────────────── */
+.mp-time-separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  min-width: 20px;
+  font-size: var(--mp-font-size-item);
+  font-weight: var(--mp-font-weight-item);
+  color: var(--mp-text);
+  pointer-events: none;
+  user-select: none;
+  flex-shrink: 0;
+  z-index: 2;
+  position: relative;
+}
+
 /* Remove vertical dividers for modern look */
 .mp-column + .mp-column {
   border-left: none;
@@ -440,6 +471,14 @@
   transform: none;
   transition: none;
   max-width: 100%;
+}
+
+/* ── Inline selection band: cover full width ──────────────────────────────── */
+.mp-inline .mp-selection-band {
+  margin: 0;
+  left: 0;
+  right: 0;
+  border-radius: 0;
 }
 
 /* ── Popover mode ────────────────────────────────────────────────────────── */
