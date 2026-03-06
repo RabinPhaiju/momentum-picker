@@ -37,5 +37,9 @@ export type {
 export { ReactMomentumPicker, ReactDatePicker } from "./react-wrapper";
 export type { ReactMomentumPickerProps, ReactDatePickerProps } from "./react-wrapper";
 
+// ── Vue Wrapper ───────────────────────────────────────────────────────────────
+export { VueMomentumPicker, VueDatePicker } from "./vue-wrapper";
+export type { VueMomentumPickerProps, VueDatePickerProps } from "./vue-wrapper";
+
 // ── Default export: MomentumPicker (backwards compat) ─────────────────────────
 export { MomentumPicker as default } from "./MomentumPicker";

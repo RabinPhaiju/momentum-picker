@@ -299,6 +299,68 @@ If you pass **React children** inside the `<ReactMomentumPicker>` or `<ReactDate
 
 ---
 
+## Vue 3 Counterparts
+
+We provide `VueMomentumPicker` and `VueDatePicker` corresponding to the Vanilla formats, heavily typed and reactive out of the box leveraging `v-model`.
+
+### `VueMomentumPicker` (iOS-wheel style)
+
+```html
+<template>
+  <VueMomentumPicker
+    mode="datetime"
+    displayMode="popover"
+    v-model:value="myDate"
+    @cancel="handleCancel"
+    @confirm="handleConfirm"
+
+    theme="light"
+    style="material"
+    primaryColor="#6750a4"
+    :is3D="true"
+    
+    :minuteStep="15"
+    :visibleRows="5"
+    :itemHeight="36"
+    
+    inputClass="my-trigger-class"
+    :inputStyle="{ border: '2px solid red', borderRadius: '8px' }"
+  />
+</template>
+```
+
+### `VueDatePicker` (Calendar style)
+
+```html
+<template>
+  <VueDatePicker
+    mode="range"
+    displayMode="modal"
+    v-model:value="myRangeArray"
+    @change="handleRangeChange"
+    
+    :numberOfMonths="2"
+    :showTimePicker="true"
+    :weekStartsOn="1"
+    :showWeekNumbers="true"
+    
+    format="YYYY-MM-DD"
+  />
+</template>
+```
+
+### Custom Vue Triggers
+
+If you place template blocks inside the `<VueMomentumPicker>` or `<VueDatePicker>`, that default input will be **replaced**, allowing custom elements. Note that the custom element handles toggling the picker on clicks securely:
+
+```html
+<VueDatePicker mode="date" displayMode="modal">
+  <button class="my-cool-btn">Open Date Picker!</button>
+</VueDatePicker>
+```
+
+---
+
 ## API Reference
 
 ### Constructor Options

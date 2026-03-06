@@ -655,4 +655,70 @@ By default, non-inline components render a styled `<input />` to act as a trigge
 
 ---
 
+## Vue 3 Components
+
+The library provides fully featured Vue 3 wrapper components leveraging `v-model` for bidirectional syncing.
+
+### `<VueMomentumPicker />` (Wheel)
+
+**Props:**
+Extends all `PickerOptions` except `container`.
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `open` | `boolean` | Control visibility programmatically |
+| `value` | `Date` | Selected date (use `v-model:value`) |
+| `@change` | `(date: Date, formatted?: string) => void` | Triggered on every scroll |
+| `@confirm` | `(date: Date, formatted?: string) => void` | Triggered on "Done" button |
+| `@cancel` | `() => void` | Triggered on "Cancel" or outside click |
+| `inputClass` | `string` | Custom class for default trigger input |
+| `inputStyle` | `StyleValue` | Custom inline styles for default trigger input |
+| `slots.default` | `Slot` | If provided, replaces the default input trigger |
+
+**Example:**
+```html
+<VueMomentumPicker
+  mode="datetime"
+  v-model:value="myDate"
+  @change="handleChange"
+  displayMode="popover"
+  theme="light"
+  style="material"
+  primaryColor="#6750a4"
+  :is3D="true"
+  :minuteStep="15"
+/>
+```
+
+### `<VueDatePicker />` (Calendar)
+
+**Props:**
+Extends all `DatePickerOptions` except `container`.
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `open` | `boolean` | Control visibility programmatically |
+| `value` | `PickerValue` | `Date` \| `[Date, Date]` \| `Date[]` (use `v-model:value`) |
+| `@change` | `(value: PickerValue, formatted?: string \| string[]) => void` | Selection changed |
+| `inputClass` | `string` | Custom class for default trigger input |
+| `inputStyle` | `StyleValue` | Custom inline styles for default trigger input |
+| `slots.default` | `Slot` | Custom trigger element |
+
+**Example:**
+```html
+<VueDatePicker
+  mode="range"
+  v-model:value="myRangeArray"
+  @change="handleRange"
+  displayMode="popover"
+  theme="dark"
+  primaryColor="#ff3b30"
+  :numberOfMonths="2"
+  format="MM/DD/YYYY"
+  :showTimePicker="true"
+/>
+```
+
+---
+
 For more examples, see [USAGE_EXAMPLES.md](USAGE_EXAMPLES.md)

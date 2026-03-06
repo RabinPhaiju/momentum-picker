@@ -94,6 +94,34 @@ export function MyComponent() {
 }
 ```
 
+### 💚 Vue 3 Support
+
+Similar to React, we provide native lightweight components tailored to Vue's reactive ecosystem using `v-model`.
+
+```html
+<script setup>
+import { ref } from 'vue';
+import { VueMomentumPicker, VueDatePicker } from 'momentum-picker';
+import 'momentum-picker/style.css'; // Includes all styles
+
+const date = ref(new Date());
+</script>
+
+<template>
+  <VueDatePicker 
+    mode="single" 
+    displayMode="popover"
+    v-model:value="date"
+  />
+  
+  <VueMomentumPicker 
+    mode="datetime"
+    displayMode="modal"
+    v-model:value="date"
+  />
+</template>
+```
+
 ---
 
 ## API Reference

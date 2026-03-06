@@ -1002,7 +1002,7 @@
         format: "YYYY-MM-DD",
         onConfirm: (v) => {
           if (v instanceof Date) {
-            const dt = v.toISOString().slice(0, 10);
+            const dt = v.toString().slice(0, 10);
             inputSingle.value = dt;
             document.getElementById("r-popover-single").innerHTML =
               `✅ Confirmed: <em>${dt}</em>`;
@@ -1065,7 +1065,7 @@
           const dates = Array.isArray(v) ? v : [];
           if (dates.length > 0) {
             const formatted = dates
-              .map((d) => d.toISOString().slice(0, 10))
+              .map((d) => d.toString().slice(0, 10))
               .join(", ");
             inputMulti.value = `${dates.length} date(s)`;
             document.getElementById("r-popover-multi").innerHTML =
@@ -1098,7 +1098,7 @@
         showClear: true,
         format: "YYYY-MM-DD",
         onConfirm: (v) => {
-          const dt = v instanceof Date ? v.toISOString().slice(0, 10) : null;
+          const dt = v instanceof Date ? v.toString().slice(0, 10) : null;
           document.getElementById("r-modal-single").innerHTML = dt
             ? `✅ Confirmed: <em>${dt}</em>`
             : "Cleared";
@@ -1126,8 +1126,8 @@
         format: "YYYY-MM-DD",
         onConfirm: (v) => {
           if (Array.isArray(v) && v[0] && v[1]) {
-            const s = v[0].toISOString().slice(0, 10);
-            const e = v[1].toISOString().slice(0, 10);
+            const s = v[0].toString().slice(0, 10);
+            const e = v[1].toString().slice(0, 10);
             document.getElementById("r-modal-range").innerHTML =
               `✅ Confirmed: <em>${s} → ${e}</em>`;
           } else {
@@ -1157,7 +1157,7 @@
           const dates = Array.isArray(v) ? v : [];
           document.getElementById("r-modal-multi").innerHTML =
             dates.length > 0
-              ? `✅ ${dates.length} date(s): <em>${dates.map((d) => d.toISOString().slice(0, 10)).join(", ")}</em>`
+              ? `✅ ${dates.length} date(s): <em>${dates.map((d) => d.toString().slice(0, 10)).join(", ")}</em>`
               : "Cleared";
         },
         onCancel: () => {

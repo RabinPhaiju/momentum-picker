@@ -25,7 +25,7 @@ function App() {
           <div className="picker-wrapper">
             <ReactDatePicker
               // --- Core Selection & Value ---
-              mode="single"                 // "single" | "multiple" | "range" | "week" | "month" | "year" | "datetime-seconds"
+              mode="range"                 // "single" | "multiple" | "range" | "week" | "month" | "year" | "datetime-seconds"
               value={dateValue}
               onChange={(val, formatted) => {
                 console.log('DatePicker Change:', val, formatted)

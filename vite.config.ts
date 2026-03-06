@@ -22,11 +22,15 @@ export default defineConfig({
         format === "es" ? "momentum-picker.es.js" : "momentum-picker.umd.js",
     },
     rollupOptions: {
-      // Do NOT bundle any external dependencies (there are none, but good practice)
-      external: [],
+      // Do NOT bundle React or Vue into the library
+      external: ["react", "react-dom", "vue"],
       output: {
         // Global variable name for UMD/IIFE builds consumed via <script>
-        globals: {},
+        globals: {
+          vue: "Vue",
+          react: "React",
+          "react-dom": "ReactDOM"
+        },
         // Inline CSS into the JS bundle so consumers don't need a separate import
         assetFileNames: (assetInfo) => {
           if (assetInfo.name === "style.css") return "style.css";
