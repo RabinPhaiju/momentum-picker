@@ -1,5 +1,8 @@
 # momentum-picker 🎡
 
+[View Demo & Examples](https://rabinphaiju.github.io/momentum-picker/)
+
+
 > A smooth, iOS-style wheel DateTime picker for the web.  
 > Zero dependencies · Vanilla TypeScript · Touch + Mouse · Fully Accessible
 

@@ -10,7 +10,6 @@ import { cloneDate, formatDate } from "./utils";
 import {
   buildColumnDefs,
   buildYearItems,
-  buildMonthItems,
   buildDayItems,
   buildMinuteItems,
 } from "./wheel/column-data";

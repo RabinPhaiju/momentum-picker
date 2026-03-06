@@ -315,7 +315,7 @@ We provide `VueMomentumPicker` and `VueDatePicker` corresponding to the Vanilla 
     @confirm="handleConfirm"
 
     theme="light"
-    style="material"
+    pickerStyle="material"
     primaryColor="#6750a4"
     :is3D="true"
     

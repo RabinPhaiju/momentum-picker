@@ -88,8 +88,9 @@ export function buildHeader(
     const monthBtn = document.createElement("div");
     monthBtn.className = "dp-header-month";
     monthBtn.setAttribute("role", "button");
-    monthBtn.textContent = monthNames[panelMonth];
-    monthBtn.setAttribute("aria-label", `Select month: ${monthNames[panelMonth]}`);
+    const name = monthNames[panelMonth];
+    monthBtn.textContent = name || "";
+    monthBtn.setAttribute("aria-label", `Select month: ${name}`);
     monthBtn.setAttribute("aria-expanded", "false");
     monthBtn.addEventListener("click", () => { this._viewMode = "month"; this._refresh(); });
 

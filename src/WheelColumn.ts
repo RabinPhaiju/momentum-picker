@@ -302,7 +302,9 @@ export class WheelColumn {
     el.addEventListener(
       "touchstart",
       (e: TouchEvent) => {
-        this.onDragStart(e.touches[0].clientY);
+        if (e.touches[0]) {
+          this.onDragStart(e.touches[0].clientY);
+        }
         e.preventDefault();
         e.stopPropagation(); // Prevent touch from reaching overlay backdrop
       },
@@ -310,13 +312,17 @@ export class WheelColumn {
     );
 
     el.addEventListener("touchmove", (e: TouchEvent) => {
-      this.onDragMove(e.touches[0].clientY);
+      if (e.touches[0]) {
+        this.onDragMove(e.touches[0].clientY);
+      }
       e.preventDefault();
       e.stopPropagation();
     }, { passive: false });
 
     el.addEventListener("touchend", (e: TouchEvent) => {
-      this.onDragEnd(e.changedTouches[0].clientY);
+      if (e.changedTouches[0]) {
+        this.onDragEnd(e.changedTouches[0].clientY);
+      }
       e.stopPropagation(); // Prevent touch from triggering backdrop click
     });
 
@@ -398,9 +404,11 @@ export class WheelColumn {
     if (samples.length >= 2) {
       const first = samples[0];
       const last = samples[samples.length - 1];
-      const dt = last.t - first.t;
-      if (dt > 0) {
-        this.pointer.velocity = (last.y - first.y) / dt; // px/ms
+      if (first && last) {
+        const dt = last.t - first.t;
+        if (dt > 0) {
+          this.pointer.velocity = (last.y - first.y) / dt; // px/ms
+        }
       }
     }
 
@@ -515,9 +523,10 @@ export class WheelColumn {
     const middleItems = Array.from(allItems).filter(
       (li) => li.dataset.copy === "1" && parseInt(li.dataset.index ?? "-1", 10) === selectedIndex,
     );
-    if (middleItems.length > 0) {
+    const selectedItem = middleItems[0];
+    if (selectedItem) {
       const id = `mp-opt-${this.el.getAttribute("aria-label")?.replace(/\s+/g, "-")}-${selectedIndex}`;
-      middleItems[0].id = id;
+      selectedItem.id = id;
       this.el.setAttribute("aria-activedescendant", id);
     }
   }

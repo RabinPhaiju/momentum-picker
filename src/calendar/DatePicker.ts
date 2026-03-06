@@ -12,12 +12,8 @@ import "../styles/calendar.css";
 import type {
   DatePickerOptions,
   ResolvedDPOptions,
-  SelectionMode,
   ViewMode,
-  DayRenderInfo,
   PickerValue,
-  FooterButton,
-  DatePreset,
 } from "./types";
 
 // ── Builder methods ─────────────────────────────────────────────────────────
@@ -104,7 +100,6 @@ export class DatePicker {
 
   // Cleanup functions
   _stopAutoUpdate: (() => void) | null = null;
-  private _stopAutoUpdateFn: (() => void) | null = null;
   private _boundKeydown: ((e: KeyboardEvent) => void) | null = null;
   private _boundMouseup: ((e: MouseEvent) => void) | null = null;
   private _boundOutsideClick: ((e: MouseEvent) => void) | null = null;

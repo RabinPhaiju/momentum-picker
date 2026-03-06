@@ -99,7 +99,8 @@ export function buildColumnsEl(
     columnsEl.appendChild(col.el);
 
     // Add colon between hour and minute
-    if (def.key === "hour" && idx + 1 < defs.length && defs[idx + 1].key === "minute") {
+    const nextDef = defs[idx + 1];
+    if (def.key === "hour" && nextDef && nextDef.key === "minute") {
       const sep = document.createElement("div");
       sep.className = "mp-time-separator";
       sep.textContent = ":";

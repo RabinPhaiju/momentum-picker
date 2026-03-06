@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { VueMomentumPicker, VueDatePicker } from '../../../src/index.ts'
-import type { PickerValue } from '../../../src/index.ts'
+import { ref, computed } from 'vue'
+import { VueMomentumPicker, VueDatePicker } from '../../../src/vue-wrapper'
+import type { PickerValue } from '../../../src/calendar/types'
 
 // Import the CSS for the pickers
 import '../../../src/styles/wheel.css'
@@ -21,6 +21,15 @@ const handleWheelChange = (date: Date, formatted?: string) => {
   console.log('Wheel Change:', date, formatted)
   wheelValue.value = date
 }
+
+const displayDateValue = computed(() => {
+  const val = dateValue.value
+  if (!val) return 'None'
+  if (Array.isArray(val)) {
+    return (val as any[]).filter(d => d instanceof Date).map(d => d.toDateString()).join(', ')
+  }
+  return val instanceof Date ? val.toDateString() : 'None'
+})
 </script>
 
 <template>
@@ -60,7 +69,7 @@ const handleWheelChange = (date: Date, formatted?: string) => {
           />
         </div>
         <div class="result-box">
-          Selected: {{ dateValue.map((d: Date) => d.toString()).join(', ') }}
+          Selected: {{ displayDateValue }}
         </div>
       </section>
 
@@ -76,7 +85,7 @@ const handleWheelChange = (date: Date, formatted?: string) => {
             
             displayMode="inline"
             theme="light"
-            style="ios"
+            pickerStyle="ios"
             primaryColor="#6750a4"
             :is3D="true"
             

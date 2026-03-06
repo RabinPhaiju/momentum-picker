@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useMemo } from "react";
-import { MomentumPicker, PickerOptions } from "./index";
-import { DatePicker, DatePickerOptions, PickerValue } from "./index";
+import { MomentumPicker } from "./index";
+import type { PickerOptions } from "./index";
+import { DatePicker } from "./index";
+import type { DatePickerOptions, PickerValue } from "./index";
 import { formatDate } from "./utils";
 
 // Import styles to ensure they are available in the React app

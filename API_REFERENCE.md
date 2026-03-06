@@ -683,7 +683,7 @@ Extends all `PickerOptions` except `container`.
   @change="handleChange"
   displayMode="popover"
   theme="light"
-  style="material"
+  pickerStyle="material"
   primaryColor="#6750a4"
   :is3D="true"
   :minuteStep="15"

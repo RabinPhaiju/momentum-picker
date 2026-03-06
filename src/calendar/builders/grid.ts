@@ -1,6 +1,6 @@
 // calendar/builders/grid.ts — Calendar grid and day cell builders
 
-import type { DayRenderInfo, SelectionMode } from "../types";
+import type { DayRenderInfo } from "../types";
 import type { DatePicker } from "../DatePicker";
 import {
   generateCalendarGrid,
@@ -56,13 +56,16 @@ export function buildGrid(
       const wn = document.createElement("div");
       wn.className = "dp-week-num";
       const firstWeekday = week.find((d) => isSameMonth(d, new Date(panelYear, panelMonth)));
-      wn.textContent = String(getISOWeekNumber(firstWeekday ?? week[0]));
-      if (mode === "week") {
-        wn.style.cursor = "pointer";
-        wn.addEventListener("click", () => {
-          const ws = startOfWeek(firstWeekday ?? week[0], this.opts.weekStartsOn);
-          this._selectDate(ws);
-        });
+      const baseDate = firstWeekday ?? week[0];
+      if (baseDate) {
+        wn.textContent = String(getISOWeekNumber(baseDate));
+        if (mode === "week") {
+          wn.style.cursor = "pointer";
+          wn.addEventListener("click", () => {
+            const ws = startOfWeek(baseDate, this.opts.weekStartsOn);
+            this._selectDate(ws);
+          });
+        }
       }
       row.appendChild(wn);
     }
@@ -89,9 +92,9 @@ export function buildGrid(
 export function buildDayCell(
   this: DatePicker,
   date: Date,
-  rangeStart: Date | null,
-  rangeEnd: Date | null,
-  mode: SelectionMode,
+  _rangeStart: Date | null,
+  _rangeEnd: Date | null,
+  mode: string,
   panelYear = this._viewYear,
   panelMonth = this._viewMonth,
 ): HTMLElement {
@@ -121,7 +124,7 @@ export function buildDayCell(
     const hi = s && effectiveEnd ? (isBefore(s, effectiveEnd) ? effectiveEnd : s) : effectiveEnd;
     isStart = !!lo && isSameDay(date, lo);
     isEnd = !!hi && isSameDay(date, hi);
-    inRange = isInRange(date, lo!, hi!);
+    if (lo && hi) inRange = isInRange(date, lo, hi);
     isSelected = isStart || isEnd;
   } else if (mode === "multiple") {
     const arr = (this._value as Date[]) ?? [];

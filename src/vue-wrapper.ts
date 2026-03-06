@@ -1,6 +1,9 @@
-import { defineComponent, h, ref, onMounted, onBeforeUnmount, watch, computed, PropType, StyleValue } from 'vue';
-import { MomentumPicker, PickerOptions } from './index';
-import { DatePicker, DatePickerOptions, PickerValue } from './index';
+import { defineComponent, h, ref, onMounted, onBeforeUnmount, watch, computed } from 'vue';
+import type { PropType, StyleValue } from 'vue';
+import { MomentumPicker } from './MomentumPicker';
+import type { PickerOptions } from './types';
+import { DatePicker } from './calendar/DatePicker';
+import type { DatePickerOptions, PickerValue } from './calendar/types';
 import { formatDate } from './utils';
 
 // Import styles to ensure they are available
@@ -26,7 +29,7 @@ export const VueMomentumPicker = defineComponent({
     mode: { type: String as PropType<PickerOptions['mode']>, default: 'datetime' },
     displayMode: { type: String as PropType<PickerOptions['displayMode']>, default: 'inline' },
     theme: { type: String as PropType<PickerOptions['theme']>, default: 'light' },
-    style: { type: String, default: 'default' },
+    pickerStyle: { type: String, default: 'default' },
     primaryColor: { type: String, default: '#007aff' },
     minDate: { type: Date as PropType<Date>, default: undefined },
     maxDate: { type: Date as PropType<Date>, default: undefined },
@@ -62,7 +65,7 @@ export const VueMomentumPicker = defineComponent({
         mode: props.mode as any,
         container: containerNode,
         anchor: anchorNode,
-        style: props.style as any,
+        style: props.pickerStyle as any,
         displayMode: props.displayMode,
         onChange: (date, formatted) => {
           emit('update:value', date);
@@ -102,7 +105,7 @@ export const VueMomentumPicker = defineComponent({
 
     watch(() => props, () => {
       if (!picker) return;
-      picker.setOptions({ ...props, ...(attrs as Record<string, any>), style: props.style as any });
+      picker.setOptions({ ...props, ...(attrs as Record<string, any>), style: props.pickerStyle as any });
       if (props.value) {
         picker.setValue(props.value);
       }
