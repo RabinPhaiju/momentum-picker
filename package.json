@@ -19,7 +19,7 @@
   "homepage": "https://github.com/RabinPhaiju/momentum-picker/blob/main/README.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/RabinPhaiju/momentum-picker.git"
+    "url": "git+https://github.com/RabinPhaiju/momentum-picker.git"
   },
   "bugs": {
     "url": "https://github.com/RabinPhaiju/momentum-picker/issues"
