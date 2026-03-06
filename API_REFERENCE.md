@@ -578,4 +578,81 @@ new MomentumPicker({
 
 ---
 
+## React Components
+
+Both pickers are fully supported in React via wrapper components. They accept all Vanilla JS configuration options as props, alongside React-specific additions.
+
+### `<ReactMomentumPicker />` (Wheel)
+
+**Props:**
+Extends all `PickerOptions` except `container`.
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `open` | `boolean` | Control visibility programmatically (for modal/popover) |
+| `value` | `Date` | Selected date |
+| `onChange` | `(date: Date, formatted?: string) => void` | Triggered on every scroll |
+| `onConfirm` | `(date: Date, formatted?: string) => void` | Triggered on "Done" button |
+| `onCancel` | `() => void` | Triggered on "Cancel" or outside click |
+| `inputClassName` | `string` | Custom class for default trigger input |
+| `inputStyle` | `CSSProperties` | Custom inline styles for default trigger input |
+| `children` | `React.ReactNode` | If provided, replaces the default input trigger |
+
+**Example:**
+```tsx
+<ReactMomentumPicker
+  mode="datetime"
+  value={myDate}
+  onChange={setDate}
+  displayMode="popover"
+  theme="light"
+  style="material"
+  primaryColor="#6750a4"
+  is3D={true}
+  minuteStep={15}
+  inputStyle={{ borderColor: '#6750a4' }}
+/>
+```
+
+### `<ReactDatePicker />` (Calendar)
+
+**Props:**
+Extends all `DatePickerOptions` except `container`.
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `open` | `boolean` | Control visibility programmatically |
+| `value` | `PickerValue` | `Date` \| `[Date, Date]` \| `Date[]` |
+| `onChange` | `(value: PickerValue, formatted?: string | string[]) => void` | Triggered when selection changes |
+| `inputClassName` | `string` | Custom class for default trigger input |
+| `inputStyle` | `CSSProperties` | Custom inline styles for default trigger input |
+| `children` | `React.ReactNode` | Custom trigger element |
+
+**Example:**
+```tsx
+<ReactDatePicker
+  mode="range"
+  value={myDateRange}
+  onChange={setRange}
+  displayMode="popover"
+  theme="dark"
+  primaryColor="#ff3b30"
+  numberOfMonths={2}
+  format="MM/DD/YYYY"
+  showTimePicker={true}
+/>
+```
+
+### Custom Trigger Elements
+
+By default, non-inline components render a styled `<input />` to act as a trigger. You can override this by passing `children`:
+
+```tsx
+<ReactMomentumPicker mode="date" displayMode="modal">
+  <button className="my-custom-btn">🗓️ Select Date</button>
+</ReactMomentumPicker>
+```
+
+---
+
 For more examples, see [USAGE_EXAMPLES.md](USAGE_EXAMPLES.md)

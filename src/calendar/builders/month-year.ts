@@ -24,9 +24,9 @@ export function buildMonthPanel(this: DatePicker): HTMLElement {
       (this.opts.minDate !== null && new Date(this._viewYear, i + 1, 0) < this.opts.minDate!) ||
       (this.opts.maxDate !== null && new Date(this._viewYear, i, 1) > this.opts.maxDate!);
 
-    const btn = document.createElement("button");
-    btn.type = "button";
+    const btn = document.createElement("div");
     btn.className = "dp-panel-item";
+    btn.setAttribute("role", "button");
     if (isSelectedMonth) btn.classList.add("dp-panel-item--selected");
     if (isTodayMonth) btn.classList.add("dp-panel-item--today");
     if (isDisabledMonth) btn.classList.add("dp-panel-item--disabled");
@@ -73,9 +73,9 @@ export function buildYearPanel(this: DatePicker): HTMLElement {
       (this.opts.minDate !== null && year < this.opts.minDate!.getFullYear()) ||
       (this.opts.maxDate !== null && year > this.opts.maxDate!.getFullYear());
 
-    const btn = document.createElement("button");
-    btn.type = "button";
+    const btn = document.createElement("div");
     btn.className = "dp-panel-item";
+    btn.setAttribute("role", "button");
     if (isSelectedYear) btn.classList.add("dp-panel-item--selected");
     if (isTodayYear) btn.classList.add("dp-panel-item--today");
     if (isDisabledYear) btn.classList.add("dp-panel-item--disabled");

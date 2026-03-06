@@ -143,8 +143,9 @@ export function buildDayCell(
   if (this.opts.renderDay) {
     const custom = this.opts.renderDay(date, info);
     if (custom) {
-      cell = document.createElement("button");
+      cell = document.createElement("div");
       cell.className = "dp-day";
+      cell.setAttribute("role", "button");
       if (typeof custom === "string") cell.innerHTML = custom;
       else { cell.innerHTML = ""; cell.appendChild(custom); }
     } else {
@@ -198,9 +199,9 @@ export function buildDayCell(
 }
 
 export function buildDefaultDayCell(this: DatePicker, date: Date, _info: DayRenderInfo): HTMLElement {
-  const cell = document.createElement("button");
+  const cell = document.createElement("div");
   cell.className = "dp-day";
-  cell.type = "button";
+  cell.setAttribute("role", "button");
   cell.textContent = String(date.getDate());
   return cell;
 }

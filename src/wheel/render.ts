@@ -13,6 +13,7 @@ export function buildOverlay(opts: ResolvedOptions, onCancel: () => void): HTMLD
   overlay.dataset.mpTheme = opts.theme;
   overlay.dataset.mpStyle = opts.style;
   overlay.addEventListener("click", (e) => {
+    e.stopPropagation();
     if (e.target === overlay) onCancel();
   });
   return overlay;
@@ -30,6 +31,7 @@ export function buildSheet(opts: ResolvedOptions): HTMLDivElement {
   sheet.style.setProperty("--mp-item-height", `${opts.itemHeight}px`);
   sheet.style.setProperty("--mp-visible-rows", String(opts.visibleRows));
   sheet.style.setProperty("--mp-width", opts.width);
+  sheet.addEventListener("click", (e) => e.stopPropagation());
   return sheet;
 }
 
@@ -42,8 +44,9 @@ export function buildHeader(
   const header = document.createElement("div");
   header.className = "mp-header";
 
-  const cancelBtn = document.createElement("button");
+  const cancelBtn = document.createElement("div");
   cancelBtn.className = "mp-btn mp-btn-cancel";
+  cancelBtn.setAttribute("role", "button");
   cancelBtn.textContent = "Cancel";
   cancelBtn.setAttribute("aria-label", "Cancel date selection");
   cancelBtn.addEventListener("click", onCancel);
@@ -52,8 +55,9 @@ export function buildHeader(
   title.className = "mp-header-title";
   title.textContent = getTitleByMode(opts.mode);
 
-  const confirmBtn = document.createElement("button");
+  const confirmBtn = document.createElement("div");
   confirmBtn.className = "mp-btn mp-btn-confirm";
+  confirmBtn.setAttribute("role", "button");
   confirmBtn.textContent = "Done";
   confirmBtn.setAttribute("aria-label", "Confirm date selection");
   confirmBtn.addEventListener("click", onConfirm);

@@ -62,6 +62,38 @@ const calendar = new DatePicker({
 });
 ```
 
+### ⚛️ React Support
+
+We provide built-in React components that wrap the vanilla pickers and add controlled state, easy prop updates, and standard event handling.
+
+```tsx
+import { useState } from 'react';
+import { ReactMomentumPicker, ReactDatePicker } from 'momentum-picker';
+import 'momentum-picker/style.css'; // Includes both wheel and calendar styles
+
+export function MyComponent() {
+  const [date, setDate] = useState(new Date());
+
+  return (
+    <>
+      <ReactDatePicker 
+        mode="single" 
+        displayMode="popover"
+        value={date} 
+        onChange={(val) => setDate(val as Date)} 
+      />
+      
+      <ReactMomentumPicker 
+        mode="datetime"
+        displayMode="modal"
+        value={date}
+        onChange={(val) => setDate(val as Date)}
+      />
+    </>
+  );
+}
+```
+
 ---
 
 ## API Reference

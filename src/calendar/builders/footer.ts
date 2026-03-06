@@ -43,9 +43,9 @@ function buildPresetsRow(this: DatePicker): HTMLElement {
       return;
     }
 
-    const btn = document.createElement("button");
-    btn.type = "button";
+    const btn = document.createElement("div");
     btn.className = "dp-btn dp-preset-btn";
+    btn.setAttribute("role", "button");
     btn.textContent = preset.label;
 
     const presetVal = typeof preset.value === "function" ? preset.value() : preset.value;
@@ -91,9 +91,9 @@ function buildMainRow(this: DatePicker): HTMLElement {
 
   if (this.opts.footerButtons?.length) {
     this.opts.footerButtons.forEach((fb) => {
-      const btn = document.createElement("button");
+      const btn = document.createElement("div");
       btn.className = `dp-btn dp-btn--ghost${fb.className ? " " + fb.className : ""}`;
-      btn.type = "button";
+      btn.setAttribute("role", "button");
       btn.textContent = fb.label;
       btn.addEventListener("click", () => fb.onClick(this));
       left.appendChild(btn);
@@ -101,9 +101,9 @@ function buildMainRow(this: DatePicker): HTMLElement {
   }
 
   if (this.opts.showToday) {
-    const btn = document.createElement("button");
+    const btn = document.createElement("div");
     btn.className = "dp-btn dp-btn--ghost";
-    btn.type = "button";
+    btn.setAttribute("role", "button");
     btn.textContent = "Now";
     btn.setAttribute("aria-label", "Navigate to now");
     btn.addEventListener("click", () => this._goToToday());
@@ -111,9 +111,9 @@ function buildMainRow(this: DatePicker): HTMLElement {
   }
 
   if (this.opts.showClear) {
-    const btn = document.createElement("button");
+    const btn = document.createElement("div");
     btn.className = "dp-btn dp-btn--ghost";
-    btn.type = "button";
+    btn.setAttribute("role", "button");
     btn.textContent = "Clear";
     btn.setAttribute("aria-label", "Clear selection");
     btn.addEventListener("click", () => this._clearValue());
@@ -126,16 +126,16 @@ function buildMainRow(this: DatePicker): HTMLElement {
     const right = document.createElement("div");
     right.className = "dp-footer-right";
 
-    const cancelBtn = document.createElement("button");
+    const cancelBtn = document.createElement("div");
     cancelBtn.className = "dp-btn dp-btn--cancel";
-    cancelBtn.type = "button";
+    cancelBtn.setAttribute("role", "button");
     cancelBtn.textContent = "Cancel";
     cancelBtn.addEventListener("click", () => this._handleCancel());
     right.appendChild(cancelBtn);
 
-    const confirmBtn = document.createElement("button");
+    const confirmBtn = document.createElement("div");
     confirmBtn.className = "dp-btn dp-btn--confirm";
-    confirmBtn.type = "button";
+    confirmBtn.setAttribute("role", "button");
     confirmBtn.textContent = "Done";
     confirmBtn.addEventListener("click", () => this._handleConfirm());
     right.appendChild(confirmBtn);

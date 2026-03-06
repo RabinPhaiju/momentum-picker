@@ -29,6 +29,7 @@ export type PickerTheme = "light" | "dark";
  */
 export type PickerStyle =
   | "default"
+  | "glass"
   | "neumorphism"
   | "brutalist"
   | "retro"

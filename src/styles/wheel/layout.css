@@ -35,7 +35,7 @@
   border-bottom: 0.5px solid var(--mp-border);
 }
 .mp-header-title { font-size: var(--mp-font-size-header); font-weight: 600; color: var(--mp-text); flex: 1; text-align: center; }
-.mp-btn { background: none; border: none; cursor: pointer; font-size: var(--mp-font-size-header); padding: 8px 12px; min-width: 70px; font-family: inherit; transition: opacity 200ms, background 200ms; -webkit-tap-highlight-color: transparent; border-radius: 10px; }
+.mp-btn { background: none; border: none; cursor: pointer; font-size: var(--mp-font-size-header); padding: 8px 12px; min-width: 70px; font-family: inherit; transition: opacity 200ms, background 200ms; -webkit-tap-highlight-color: transparent; border-radius: 10px; user-select: none; display: inline-flex; align-items: center; justify-content: center; }
 .mp-btn:hover { background: rgba(0, 0, 0, 0.05); }
 .mp-btn:active { opacity: 0.6; }
 [data-mp-theme="dark"] .mp-btn:hover, [data-mp-style="black"] .mp-btn:hover { background: rgba(255, 255, 255, 0.05); }

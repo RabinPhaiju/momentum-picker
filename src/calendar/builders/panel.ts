@@ -13,6 +13,7 @@ export function buildPanel(this: DatePicker, extraClass = "", monthOffset = 0): 
   panel.className = ["dp-panel", extraClass].filter(Boolean).join(" ");
   panel.setAttribute("role", "dialog");
   panel.setAttribute("aria-label", "Date Picker");
+  panel.addEventListener("click", (e) => e.stopPropagation());
   this._renderPanelContent(panel, monthOffset);
   return panel;
 }
@@ -71,8 +72,9 @@ export function buildHeader(
   const header = document.createElement("div");
   header.className = "dp-header";
 
-  const prevBtn = document.createElement("button");
+  const prevBtn = document.createElement("div");
   prevBtn.className = "dp-header-nav";
+  prevBtn.setAttribute("role", "button");
   prevBtn.setAttribute("aria-label", this._viewMode === "year" ? "Previous decade" : "Previous month");
   prevBtn.innerHTML = "‹";
   prevBtn.addEventListener("click", () => this._navigatePrev());
@@ -83,15 +85,17 @@ export function buildHeader(
 
   if (this._viewMode === "day") {
     const monthNames = getMonthNames(this.opts.locale);
-    const monthBtn = document.createElement("button");
+    const monthBtn = document.createElement("div");
     monthBtn.className = "dp-header-month";
+    monthBtn.setAttribute("role", "button");
     monthBtn.textContent = monthNames[panelMonth];
     monthBtn.setAttribute("aria-label", `Select month: ${monthNames[panelMonth]}`);
     monthBtn.setAttribute("aria-expanded", "false");
     monthBtn.addEventListener("click", () => { this._viewMode = "month"; this._refresh(); });
 
-    const yearBtn = document.createElement("button");
+    const yearBtn = document.createElement("div");
     yearBtn.className = "dp-header-year";
+    yearBtn.setAttribute("role", "button");
     yearBtn.textContent = String(panelYear);
     yearBtn.setAttribute("aria-label", `Select year: ${panelYear}`);
     yearBtn.setAttribute("aria-expanded", "false");
@@ -104,8 +108,9 @@ export function buildHeader(
     title.appendChild(monthBtn);
     title.appendChild(yearBtn);
   } else if (this._viewMode === "month") {
-    const yearBtn = document.createElement("button");
+    const yearBtn = document.createElement("div");
     yearBtn.className = "dp-header-year";
+    yearBtn.setAttribute("role", "button");
     yearBtn.textContent = String(this._viewYear);
     yearBtn.setAttribute("aria-label", `Select year: ${this._viewYear}`);
     if (this.opts.mode !== "month") {
@@ -128,8 +133,9 @@ export function buildHeader(
 
   header.appendChild(title);
 
-  const nextBtn = document.createElement("button");
+  const nextBtn = document.createElement("div");
   nextBtn.className = "dp-header-nav";
+  nextBtn.setAttribute("role", "button");
   nextBtn.setAttribute("aria-label", this._viewMode === "year" ? "Next decade" : "Next month");
   nextBtn.innerHTML = "›";
   nextBtn.addEventListener("click", () => this._navigateNext());

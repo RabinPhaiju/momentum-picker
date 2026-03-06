@@ -257,6 +257,7 @@ export class DatePicker {
       this._overlayEl.setAttribute("aria-modal", "true");
       this._overlayEl.setAttribute("aria-label", "Date Picker");
       this._overlayEl.addEventListener("click", (e) => {
+        e.stopPropagation();
         if (e.target === this._overlayEl) this._handleCancel();
       });
       const panel = this._buildPanel();
@@ -416,17 +417,15 @@ export class DatePicker {
 
   /** Update options at runtime (theme, primaryColor, minDate, maxDate, etc.) */
   setOptions(partial: Partial<DatePickerOptions>): this {
+    // Update options object
+    this.opts = { ...this.opts, ...partial } as ResolvedDPOptions;
+
     if (partial.theme) {
-      this.opts.theme = partial.theme;
       if (this._overlayEl) this._overlayEl.dataset.dpTheme = partial.theme;
     }
     if (partial.primaryColor) {
-      this.opts.primaryColor = partial.primaryColor;
       this._panelEl?.style.setProperty("--dp-primary", partial.primaryColor);
     }
-    if (partial.minDate !== undefined) this.opts.minDate = partial.minDate ?? null;
-    if (partial.maxDate !== undefined) this.opts.maxDate = partial.maxDate ?? null;
-    if (partial.disabledDates !== undefined) this.opts.disabledDates = partial.disabledDates ?? null;
     if (partial.open !== undefined) {
       if (partial.open) this.show(); else this.hide();
     }

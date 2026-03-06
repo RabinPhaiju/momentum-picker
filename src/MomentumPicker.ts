@@ -29,6 +29,7 @@ export class MomentumPicker {
   private _stopAutoUpdate: (() => void) | null = null;
   private _boundOutsideClick: ((e: MouseEvent) => void) | null = null;
   private columns: Map<string, WheelColumn> = new Map();
+  private _open = false;
 
   constructor(options: PickerOptions) {
     this.opts = this._resolveOptions(options);
@@ -39,6 +40,12 @@ export class MomentumPicker {
       this.containerEl = this._resolveEl(options.container || document.body);
     }
     this._value = cloneDate(this.opts.value);
+    
+    // Normalize open state
+    if (this.opts.displayMode === "inline") {
+      this._open = true;
+    }
+
     this._render();
   }
 
@@ -171,6 +178,9 @@ export class MomentumPicker {
   // ── Public API ─────────────────────────────────────────────────────────────
 
   show(): this {
+    if (this._open && this.opts.displayMode !== "inline") return this;
+    this._open = true;
+
     if (this.opts.displayMode === "modal" && this.overlay) {
       this.overlay.classList.add("mp-visible");
     } else if (this.opts.displayMode === "popover" && this.sheet && this.anchorEl) {
@@ -180,10 +190,14 @@ export class MomentumPicker {
         ({ top, left }) => { this.sheet!.style.top = `${top}px`; this.sheet!.style.left = `${left}px`; },
         "bottom-start" as PopoverPlacement,
       );
-      requestAnimationFrame(() => requestAnimationFrame(() => this.sheet!.classList.add("mp-visible")));
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (this._open) this.sheet!.classList.add("mp-visible");
+      }));
       if (!this._boundOutsideClick) {
         this._boundOutsideClick = this._onOutsideClick.bind(this);
-        setTimeout(() => document.addEventListener("click", this._boundOutsideClick!), 0);
+        setTimeout(() => {
+          if (this._open) document.addEventListener("click", this._boundOutsideClick!);
+        }, 10);
       }
     }
     setTimeout(() => this.columnsEl?.querySelector<HTMLElement>(".mp-column")?.focus(), 250);
@@ -191,11 +205,14 @@ export class MomentumPicker {
   }
 
   hide(): this {
+    if (!this._open || this.opts.displayMode === "inline") return this;
+    this._open = false;
+
     if (this.opts.displayMode === "modal" && this.overlay) {
       this.overlay.classList.remove("mp-visible");
     } else if (this.opts.displayMode === "popover" && this.sheet) {
       this.sheet.classList.remove("mp-visible");
-      setTimeout(() => { if (!this.sheet?.classList.contains("mp-visible")) this.sheet!.style.display = "none"; }, 400);
+      setTimeout(() => { if (!this._open) this.sheet!.style.display = "none"; }, 400);
       this._stopAutoUpdate?.(); this._stopAutoUpdate = null;
       if (this._boundOutsideClick) { document.removeEventListener("click", this._boundOutsideClick); this._boundOutsideClick = null; }
     }
@@ -203,10 +220,7 @@ export class MomentumPicker {
   }
 
   toggle(): this {
-    const isVisible = this.opts.displayMode === "modal"
-      ? this.overlay?.classList.contains("mp-visible")
-      : this.sheet?.classList.contains("mp-visible");
-    return isVisible ? this.hide() : this.show();
+    return this._open ? this.hide() : this.show();
   }
 
   setValue(date: Date): this {
@@ -238,22 +252,21 @@ export class MomentumPicker {
   }
 
   setOptions(partial: Partial<PickerOptions>): this {
+    // Update options object
+    this.opts = { ...this.opts, ...partial } as ResolvedOptions;
+
     if (partial.theme) {
-      this.opts.theme = partial.theme;
       if (this.overlay) this.overlay.dataset.mpTheme = partial.theme;
       if (this.sheet) this.sheet.dataset.mpTheme = partial.theme;
     }
     if (partial.style) {
-      this.opts.style = partial.style;
       if (this.overlay) this.overlay.dataset.mpStyle = partial.style;
       if (this.sheet) this.sheet.dataset.mpStyle = partial.style;
     }
     if (partial.primaryColor && this.sheet) {
-      this.opts.primaryColor = partial.primaryColor;
       this.sheet.style.setProperty("--mp-primary", partial.primaryColor);
     }
     if (partial.is3D !== undefined) {
-      this.opts.is3D = partial.is3D;
       this.columns.forEach((col) => col.setIs3D(partial.is3D!));
     }
     return this;
@@ -263,8 +276,11 @@ export class MomentumPicker {
     this.columns.forEach((col) => col.destroy());
     this.columns.clear();
     this.overlay?.remove();
+    this.sheet?.remove();
     this.overlay = null;
     this.sheet = null;
     this.columnsEl = null;
+    this._stopAutoUpdate?.();
+    if (this._boundOutsideClick) document.removeEventListener("click", this._boundOutsideClick);
   }
 }

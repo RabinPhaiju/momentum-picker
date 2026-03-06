@@ -33,5 +33,9 @@ export type {
   ResolvedDPOptions,
 } from "./calendar/types";
 
+// ── React Wrapper ─────────────────────────────────────────────────────────────
+export { ReactMomentumPicker, ReactDatePicker } from "./react-wrapper";
+export type { ReactMomentumPickerProps, ReactDatePickerProps } from "./react-wrapper";
+
 // ── Default export: MomentumPicker (backwards compat) ─────────────────────────
 export { MomentumPicker as default } from "./MomentumPicker";

@@ -67,8 +67,8 @@
 [data-mp-style="pastel"] .mp-time-separator { color: #495057; }
 [data-mp-style="vibrant"] { --mp-bg: #000; --mp-text: #fff; --mp-primary: #00ff00; }
 [data-mp-style="vibrant"] .mp-selection-band { background: transparent; border: 2px solid #00ff00; box-shadow: 0 0 15px rgba(0,255,0,0.5); }
-[data-mp-style="frosted"] { --mp-bg: rgba(255, 255, 255, 0.4); --mp-glass-blur: 20px; }
-[data-mp-style="frosted"] .mp-sheet { backdrop-filter: blur(var(--mp-glass-blur)); -webkit-backdrop-filter: blur(var(--mp-glass-blur)); border: 1px solid rgba(255,255,255,0.5); }
+[data-mp-style="frosted"], [data-mp-style="glass"] { --mp-bg: rgba(255, 255, 255, 0.4); --mp-glass-blur: 20px; }
+[data-mp-style="frosted"] .mp-sheet, [data-mp-style="glass"] .mp-sheet { backdrop-filter: blur(var(--mp-glass-blur)); -webkit-backdrop-filter: blur(var(--mp-glass-blur)); border: 1px solid rgba(255,255,255,0.5); }
 [data-mp-style="elevated"] { --mp-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
 [data-mp-style="elevated"] .mp-sheet { transform: scale(1.02); }
 [data-mp-style="material"] { --mp-bg: #f7f2fa; --mp-primary: #6750a4; --mp-border-radius: 28px; }

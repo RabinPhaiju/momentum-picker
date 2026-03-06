@@ -36,6 +36,10 @@
   padding: 7px 14px;
   transition: background var(--dp-transition-fast), opacity 120ms;
   -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .dp-btn:focus-visible { outline: 2px solid var(--dp-primary); outline-offset: 2px; }
 .dp-btn--ghost { background: none; color: var(--dp-primary); }
@@ -68,6 +72,10 @@
   transition: background var(--dp-transition-fast), color var(--dp-transition-fast), border-color var(--dp-transition-fast);
   white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .dp-preset-btn:hover { background: var(--dp-primary-soft); border-color: var(--dp-primary); color: var(--dp-primary); }
 .dp-preset-btn--active { background: var(--dp-primary) !important; color: #fff !important; border-color: var(--dp-primary) !important; }

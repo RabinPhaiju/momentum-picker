@@ -23,6 +23,7 @@
   justify-content: center;
   transition: background var(--dp-transition-fast);
   flex-shrink: 0;
+  user-select: none;
 }
 .dp-header-nav:hover { background: var(--dp-surface); }
 
@@ -44,6 +45,10 @@
   padding: 4px 6px;
   border-radius: var(--dp-radius-sm);
   transition: background var(--dp-transition-fast);
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .dp-header-month:hover,
 .dp-header-year:hover { background: var(--dp-surface); }
@@ -109,6 +114,7 @@
   transition: background var(--dp-transition-fast), color var(--dp-transition-fast);
   -webkit-tap-highlight-color: transparent;
   position: relative;
+  user-select: none;
 }
 
 .dp-day:hover:not(.dp-day--disabled):not(.dp-day--outside) {
@@ -180,6 +186,10 @@
   font-family: var(--dp-font);
   transition: background var(--dp-transition-fast), color var(--dp-transition-fast);
   -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .dp-panel-item:hover { background: var(--dp-surface); }
 .dp-panel-item--selected { background: var(--dp-primary) !important; color: white !important; font-weight: 600; }

@@ -64,6 +64,33 @@ const picker = new MomentumPicker({
 picker.show();
 ```
 
+### ⚛️ React Integration - Quick Start
+
+We provide fully featured React wrapper components: `ReactMomentumPicker` and `ReactDatePicker`.
+Both are controlled components seamlessly bridging the vanilla instance to standard React state.
+
+```tsx
+import { useState } from 'react';
+import { ReactMomentumPicker } from 'momentum-picker';
+import 'momentum-picker/style.css'; // Always include CSS
+
+export function Demo() {
+  const [date, setDate] = useState(new Date());
+
+  return (
+    <ReactMomentumPicker
+      mode="datetime"
+      value={date}
+      onChange={(newDate) => setDate(newDate)}
+      displayMode="popover"
+      theme="light"
+      style="material"
+      primaryColor="#6750a4"
+    />
+  );
+}
+```
+
 ### Basic Example - Calendar Picker
 
 ```typescript
@@ -204,6 +231,71 @@ picker.show(); // Still required to initialize
 ```
 
 **Use cases:** Embedded in forms, dashboards, or custom layouts.
+
+---
+
+## React Counterparts
+
+Both Vanilla JS classes have corresponding React versions. The React components accept essentially the exact same configuration as the vanilla ones, but manage their own lifecycle, props syncing, and `document.body` DOM targeting seamlessly.
+
+### `ReactMomentumPicker` (iOS-wheel style)
+
+```tsx
+<ReactMomentumPicker
+  mode="datetime"
+  displayMode="popover"
+  value={myDate}
+  onChange={(val, formatted) => setDate(val)}
+  onConfirm={(val) => console.log('Confirmed!', val)}
+  onCancel={() => console.log('Dismissed')}
+
+  // Visuals
+  theme="light"
+  style="material"
+  primaryColor="#6750a4"
+  is3D={true}
+
+  // Configuration
+  minuteStep={15}
+  visibleRows={5}
+  itemHeight={36}
+  
+  // You can customize the default input trigger:
+  inputStyle={{ border: '2px solid red', borderRadius: '8px' }}
+  inputClassName="my-trigger-class"
+/>
+```
+
+### `ReactDatePicker` (Calendar style)
+
+```tsx
+<ReactDatePicker
+  mode="range"
+  displayMode="modal"
+  value={myRangeArray}
+  onChange={(val) => setRangeArray(val)}
+
+  // Calendar specific features
+  numberOfMonths={2}
+  showTimePicker={true}
+  weekStartsOn={1}
+  showWeekNumbers={true}
+  
+  format="YYYY-MM-DD"
+/>
+```
+
+### Custom React Triggers
+
+In both components, when `displayMode` is `'popover'` or `'modal'`, we render a default native-looking input element that toggles the picker on click.
+
+If you pass **React children** inside the `<ReactMomentumPicker>` or `<ReactDatePicker>`, that default input will be **replaced**, allowing you to implement whatever UI you prefer (e.g. your own custom button or custom input component):
+
+```tsx
+<ReactDatePicker mode="date" displayMode="modal">
+  <button className="my-cool-btn">Open Date Picker!</button>
+</ReactDatePicker>
+```
 
 ---
 
